@@ -7,6 +7,7 @@ from core.tray_manager import TrayManager
 from core.permission_manager import PermissionManager
 from utils.clipboard_utils import ClipboardUtils
 from features.copy_path import CopyPathFeature
+from features.disk_visualizer import DiskVisualizerFactory
 from ui.preferences_window import PreferencesWindow
 
 
@@ -20,7 +21,8 @@ class ToolBoxApp:
 
         # 初始化功能
         self.features = {
-            'copy_path': CopyPathFeature.create()
+            'copy_path': CopyPathFeature.create(),
+            'disk_visualizer': DiskVisualizerFactory.create()
         }
 
         # 过滤掉不支持的功能
@@ -101,6 +103,14 @@ class ToolBoxApp:
 
         return callback
 
+    def _create_launch_callback(self, feature):
+        """创建启动回调（用于独立工具）"""
+
+        def callback(sender=None):
+            self.launch_tool(feature)
+
+        return callback
+
     def create_menu_items(self):
         """创建菜单项"""
         menu_items = []
@@ -114,18 +124,26 @@ class ToolBoxApp:
         for key, feature in self.features.items():
             if feature:
                 status = feature.get_status()
-                submenu = []
 
-                if feature.is_installed():
-                    submenu.append(('✓ 已安装', None))
-                    submenu.append('separator')
-                    submenu.append(('卸载', self._create_uninstall_callback(feature)))
+                # 检查是否是独立工具（通过特定的 key 或功能名称判断）
+                is_tool = key in ['disk_visualizer'] or '可视化' in feature.name
+
+                if is_tool:
+                    # 独立工具直接添加"打开"菜单项
+                    menu_items.append((f'{feature.name}', self._create_launch_callback(feature)))
                 else:
-                    submenu.append(('未安装', None))
-                    submenu.append('separator')
-                    submenu.append(('安装', self._create_install_callback(feature)))
+                    # 常规功能使用安装/卸载逻辑
+                    submenu = []
+                    if feature.is_installed():
+                        submenu.append(('✓ 已安装', None))
+                        submenu.append('separator')
+                        submenu.append(('卸载', self._create_uninstall_callback(feature)))
+                    else:
+                        submenu.append(('未安装', None))
+                        submenu.append('separator')
+                        submenu.append(('安装', self._create_install_callback(feature)))
 
-                menu_items.append((f'{feature.name}', submenu))
+                    menu_items.append((f'{feature.name}', submenu))
 
         # Windows特有功能
         if SystemDetector.is_windows():
@@ -172,6 +190,15 @@ class ToolBoxApp:
             self.update_menu()
         else:
             self.show_notification("卸载失败", "请检查权限")
+
+    def launch_tool(self, feature):
+        """启动独立工具"""
+        print(f"启动工具: {feature.name}")
+
+        if feature.launch_tool():
+            self.show_notification("工具已启动", f"{feature.name}已打开")
+        else:
+            self.show_notification("启动失败", "请检查是否已安装依赖库")
 
     def update_menu(self):
         """更新菜单"""
