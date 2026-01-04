@@ -1,5 +1,10 @@
 import sys
 import platform
+import os
+
+# 禁用 customtkinter 的 DPI 缩放检查，避免与 pystray 的线程冲突
+os.environ['CTK_SCALING_DISABLED'] = '1'
+
 from app.toolbox_app import ToolBoxApp
 
 

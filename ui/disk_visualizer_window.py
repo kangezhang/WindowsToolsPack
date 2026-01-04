@@ -6,8 +6,13 @@
 import os
 import threading
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import Dict, List, Tuple
 from core.system_detector import SystemDetector
+from core.cleanup_rules import (
+    CleanupExecutor,
+    CleanupScanner,
+    get_appdata_specific_rules,
+)
 
 try:
     import customtkinter as ctk
@@ -25,6 +30,9 @@ class DiskVisualizerWindow:
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
 
+        # 禁用 DPI 缩放检查，避免与 pystray 线程冲突
+        ctk.deactivate_automatic_dpi_awareness()
+
         self.window = ctk.CTk()
         self.window.title("磁盘空间可视化工具")
         self.window.geometry("1100x750")
@@ -35,6 +43,8 @@ class DiskVisualizerWindow:
         self.current_path: str = ""
         self.scan_results: List[Tuple[str, int, float]] = []
         self.scanning = False
+
+        self.cleanup_dialog = None
 
         self._create_ui()
         self._goto_home_or_select()
@@ -123,6 +133,8 @@ class DiskVisualizerWindow:
     def _browse_folder(self):
         folder = filedialog.askdirectory(title="选择要分析的文件夹")
         if folder:
+            # 规范化路径
+            folder = os.path.normpath(folder)
             self.path_entry.delete(0, tk.END)
             self.path_entry.insert(0, folder)
 
@@ -138,8 +150,8 @@ class DiskVisualizerWindow:
         # 首页按钮
         home_btn = ctk.CTkButton(
             self.breadcrumb_scroll,
-            text="Home",
-            width=60,
+            text="🏠 Home",
+            width=80,
             height=32,
             font=ctk.CTkFont(size=11),
             command=self._goto_root
@@ -148,12 +160,20 @@ class DiskVisualizerWindow:
 
         ctk.CTkLabel(self.breadcrumb_scroll, text=" ▶ ", font=ctk.CTkFont(size=12)).pack(side="left")
 
-        parts = Path(self.current_path).parts
+        # 规范化当前路径
+        normalized_path = os.path.normpath(self.current_path)
+        parts = Path(normalized_path).parts
         current_path_build = ""
+
         for i, part in enumerate(parts):
             if part in ("", "/", "\\"):
                 continue
-            current_path_build = str(Path(current_path_build) / part)
+
+            # 使用 os.path.join 而不是 Path 的 / 操作符，避免混合斜杠
+            if current_path_build:
+                current_path_build = os.path.join(current_path_build, part)
+            else:
+                current_path_build = part
 
             btn = ctk.CTkButton(
                 self.breadcrumb_scroll,
@@ -174,8 +194,8 @@ class DiskVisualizerWindow:
         if len(self.history) > 0:
             back_btn = ctk.CTkButton(
                 self.breadcrumb_scroll,
-                text="Back",
-                width=80,
+                text="⬅ Back",
+                width=90,
                 height=32,
                 command=self._go_back
             )
@@ -183,10 +203,11 @@ class DiskVisualizerWindow:
 
     def _navigate_to(self, path: str):
         """跳转到指定路径并扫描"""
-        self.current_path = path
+        # 规范化路径
+        self.current_path = os.path.normpath(path)
         self.path_entry.delete(0, tk.END)
-        self.path_entry.insert(0, path)
-        self._start_scan(path, add_to_history=False)
+        self.path_entry.insert(0, self.current_path)
+        self._start_scan(self.current_path, add_to_history=False)
 
     def _goto_root(self):
         """返回最初选择的根目录"""
@@ -204,12 +225,16 @@ class DiskVisualizerWindow:
     def _start_scan_current(self):
         path = self.path_entry.get().strip()
         if path and os.path.isdir(path):
+            # 规范化路径
+            path = os.path.normpath(path)
             self._start_scan(path, add_to_history=len(self.history) == 0)
 
     def _start_scan(self, path: str, add_to_history: bool = True):
         if self.scanning:
             return
 
+        # 规范化路径
+        path = os.path.normpath(path)
         self.current_path = path
         self.path_entry.delete(0, tk.END)
         self.path_entry.insert(0, path)
@@ -319,6 +344,18 @@ class DiskVisualizerWindow:
             name_label.pack(side="left", padx=12, pady=8)
             name_label.bind("<Button-1>", lambda e, p=item_path: self._on_item_click(p))
 
+            if self._should_show_appdata_cleanup(item_path):
+                clean_btn = ctk.CTkButton(
+                    frame,
+                    text="智能清理",
+                    width=90,
+                    height=32,
+                    fg_color="#d7263d",
+                    hover_color="#a61b2a",
+                    command=self._open_appdata_cleanup_dialog
+                )
+                clean_btn.pack(side="left", padx=(4, 0))
+
             # 进度条
             bar_frame = ctk.CTkFrame(frame)
             bar_frame.pack(side="left", fill="x", expand=True, padx=10)
@@ -337,6 +374,32 @@ class DiskVisualizerWindow:
                 anchor="e"
             )
             info_label.pack(side="right", padx=12)
+
+    def _should_show_appdata_cleanup(self, path: str) -> bool:
+        if not SystemDetector.is_windows():
+            return False
+        normalized = os.path.normpath(path).lower()
+        if 'appdata' not in normalized:
+            return False
+        user_profile = os.environ.get('USERPROFILE', '').lower()
+        if user_profile and normalized.startswith(os.path.normpath(user_profile).lower()):
+            # 只要位于当前用户 AppData 目录下就允许展示
+            return True
+        # 回退：包含 appdata 的路径也展示按钮
+        return True
+
+    def _open_appdata_cleanup_dialog(self):
+        if not SystemDetector.is_windows():
+            messagebox.showinfo("提示", "AppData 智能清理仅支持 Windows。")
+            return
+        if self.cleanup_dialog and self.cleanup_dialog.is_open():
+            self.cleanup_dialog.focus()
+            return
+
+        def on_close():
+            self.cleanup_dialog = None
+
+        self.cleanup_dialog = AppDataCleanupDialog(self.window, self._format_size, on_close=on_close)
 
     def _on_item_click(self, path: str):
         if os.path.isdir(path):
@@ -377,3 +440,389 @@ class DiskVisualizerWindow:
 
     def show(self):
         self.window.mainloop()
+
+
+class AppDataCleanupDialog:
+    """弹出式 AppData 智能清理对话框"""
+
+    def __init__(self, parent_window, format_size_callback, on_close=None):
+        self.parent_window = parent_window
+        self.format_size = format_size_callback
+        self.on_close_callback = on_close
+        self.window = ctk.CTkToplevel(parent_window)
+        self.window.title("AppData 智能清理")
+        self.window.geometry("780x540")
+        self.window.minsize(640, 420)
+        self.window.transient(parent_window)
+
+        self.is_closed_flag = False
+        self.results: List[Dict] = []
+        self.result_vars: List[Tuple[Dict, tk.BooleanVar]] = []
+        self.select_all_var = tk.BooleanVar(value=False)
+        self.scanner = None
+        self.scanning = False
+        self.running = False
+
+        self._build_ui()
+        self.window.protocol("WM_DELETE_WINDOW", self.close)
+        self._start_scan()
+
+    def _build_ui(self):
+        header = ctk.CTkFrame(self.window, fg_color="transparent")
+        header.pack(fill="x", padx=16, pady=(16, 8))
+
+        info_frame = ctk.CTkFrame(header, fg_color="transparent")
+        info_frame.pack(side="left", fill="both", expand=True)
+
+        ctk.CTkLabel(
+            info_frame,
+            text="AppData 智能清理",
+            font=ctk.CTkFont(size=22, weight="bold")
+        ).pack(anchor="w")
+
+        self.status_label = ctk.CTkLabel(
+            info_frame,
+            text="正在扫描常见缓存、日志…",
+            text_color="#9ca3af",
+            font=ctk.CTkFont(size=12)
+        )
+        self.status_label.pack(anchor="w", pady=(2, 0))
+
+        self.summary_label = ctk.CTkLabel(
+            info_frame,
+            text="会自动识别 Unity、Slack、pip 等 AppData 缓存，默认勾选低风险项目。",
+            text_color="#6b7280",
+            font=ctk.CTkFont(size=11)
+        )
+        self.summary_label.pack(anchor="w", pady=(2, 0))
+
+        control_frame = ctk.CTkFrame(header, fg_color="transparent")
+        control_frame.pack(side="right")
+
+        self.select_all_checkbox = ctk.CTkCheckBox(
+            control_frame,
+            text="全选安全项",
+            variable=self.select_all_var,
+            command=self._toggle_select_all,
+            state="disabled"
+        )
+        self.select_all_checkbox.pack(padx=4, pady=(0, 6))
+
+        button_frame = ctk.CTkFrame(control_frame, fg_color="transparent")
+        button_frame.pack()
+
+        self.scan_btn = ctk.CTkButton(
+            button_frame,
+            text="重新扫描",
+            width=120,
+            command=self._start_scan
+        )
+        self.scan_btn.pack(side="left", padx=4)
+
+        self.clean_btn = ctk.CTkButton(
+            button_frame,
+            text="一键清理",
+            width=120,
+            fg_color="#d7263d",
+            hover_color="#a61b2a",
+            state="disabled",
+            command=self._start_cleanup
+        )
+        self.clean_btn.pack(side="left", padx=4)
+
+        self.result_frame = ctk.CTkScrollableFrame(
+            self.window,
+            label_text=" 智能识别的缓存 / 日志目录"
+        )
+        self.result_frame.pack(fill="both", expand=True, padx=16, pady=(0, 16))
+
+        ctk.CTkLabel(
+            self.result_frame,
+            text="正在分析 AppData…",
+            text_color="#888888",
+            font=ctk.CTkFont(size=13)
+        ).pack(pady=48)
+
+    def focus(self):
+        if self.window and self.window.winfo_exists():
+            self.window.lift()
+            self.window.focus_force()
+
+    def close(self):
+        self.is_closed_flag = True
+        try:
+            if self.window and self.window.winfo_exists():
+                self.window.destroy()
+        except:
+            pass
+        if self.on_close_callback:
+            try:
+                self.on_close_callback()
+            except:
+                pass
+    def is_open(self) -> bool:
+        return not self.is_closed_flag and self.window.winfo_exists()
+
+    def _start_scan(self):
+        if self.scanning:
+            return
+        self.scanning = True
+        self.status_label.configure(text="正在扫描 AppData 缓存…")
+        self.summary_label.configure(text="")
+        self.scan_btn.configure(state="disabled", text="扫描中…")
+        self.clean_btn.configure(state="disabled", text="一键清理")
+        self.select_all_checkbox.configure(state="disabled")
+        self.select_all_var.set(False)
+        self.results.clear()
+        self.result_vars.clear()
+
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
+        ctk.CTkLabel(
+            self.result_frame,
+            text="正在扫描…",
+            text_color="#888888",
+            font=ctk.CTkFont(size=13)
+        ).pack(pady=48)
+
+        thread = threading.Thread(target=self._scan_rules, daemon=True)
+        thread.start()
+
+    def _scan_rules(self):
+        try:
+            rules = get_appdata_specific_rules()
+            self.scanner = CleanupScanner(rules)
+
+            def progress(msg: str):
+                if not self.is_open():
+                    return
+                self.window.after(0, lambda m=msg: self.status_label.configure(text=m))
+
+            results = self.scanner.scan(progress_callback=progress)
+            if self.is_open():
+                self.window.after(0, lambda r=results: self._on_scan_complete(r))
+        except Exception as e:
+            if self.is_open():
+                self.window.after(0, lambda: self._on_scan_error(str(e)))
+
+    def _on_scan_complete(self, results: List[Dict]):
+        self.scanning = False
+        self.scan_btn.configure(state="normal", text="重新扫描")
+        self.results = results or []
+
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
+        self.result_vars.clear()
+
+        if not self.results:
+            self.status_label.configure(text="AppData 内暂未发现可清理内容")
+            self.summary_label.configure(text="可点击“重新扫描”再次检查。")
+            ctk.CTkLabel(
+                self.result_frame,
+                text="没有扫描到可清理的目录。",
+                text_color="#888888",
+                font=ctk.CTkFont(size=13)
+            ).pack(pady=48)
+            return
+
+        total_size = sum(item['total_size'] for item in self.results)
+        total_count = sum(item['file_count'] for item in self.results)
+        self.status_label.configure(text=f"扫描完成 · 共 {len(self.results)} 组")
+        self.summary_label.configure(
+            text=f"体积合计 {self.format_size(total_size)} · {total_count} 个文件"
+        )
+        self.select_all_checkbox.configure(state="normal")
+
+        for result in self.results:
+            rule = result['rule']
+            default_selected = rule.risk_level in ("safe", "low")
+            result['selected'] = result.get('selected', default_selected)
+
+            row = ctk.CTkFrame(self.result_frame)
+            row.pack(fill="x", padx=8, pady=5)
+
+            var = tk.BooleanVar(value=result['selected'])
+            checkbox = ctk.CTkCheckBox(
+                row,
+                text="",
+                variable=var,
+                width=20,
+                command=lambda r=result, v=var: self._toggle_selection(r, v)
+            )
+            checkbox.pack(side="left", padx=(10, 6), pady=10)
+            self.result_vars.append((result, var))
+
+            content = ctk.CTkFrame(row, fg_color="transparent")
+            content.pack(side="left", fill="both", expand=True)
+
+            ctk.CTkLabel(
+                content,
+                text=rule.name,
+                font=ctk.CTkFont(size=14, weight="bold"),
+                anchor="w"
+            ).pack(anchor="w")
+
+            ctk.CTkLabel(
+                content,
+                text=f"{rule.description} · 风险：{rule.risk_level}",
+                text_color="#9ca3af",
+                font=ctk.CTkFont(size=11),
+                anchor="w"
+            ).pack(anchor="w", pady=(2, 0))
+
+            meta = ctk.CTkFrame(row, fg_color="transparent")
+            meta.pack(side="right", padx=6)
+
+            ctk.CTkLabel(
+                meta,
+                text=f"{self.format_size(result['total_size'])}\n{result['file_count']} 个文件",
+                justify="right",
+                font=ctk.CTkFont(size=12)
+            ).pack(anchor="e")
+
+            if result['paths']:
+                ctk.CTkButton(
+                    meta,
+                    text="定位",
+                    width=70,
+                    height=30,
+                    command=lambda p=result['paths'][0]: self._open_path(p)
+                ).pack(anchor="e", pady=(6, 0))
+
+        self._sync_select_all()
+        self._update_summary()
+
+    def _on_scan_error(self, message: str):
+        self.scanning = False
+        self.scan_btn.configure(state="normal", text="重新扫描")
+        self.clean_btn.configure(state="disabled", text="一键清理")
+        self.select_all_checkbox.configure(state="disabled")
+        self.status_label.configure(text="扫描失败")
+        messagebox.showerror("AppData 扫描失败", f"无法分析 AppData：{message}")
+
+    def _toggle_selection(self, result: Dict, var: tk.BooleanVar):
+        result['selected'] = bool(var.get())
+        self._sync_select_all()
+        self._update_summary()
+
+    def _toggle_select_all(self):
+        if not self.results:
+            return
+        target = bool(self.select_all_var.get())
+
+        for result, var in self.result_vars:
+            is_safe = result['rule'].risk_level in ("safe", "low")
+            desired = target and is_safe
+            var.set(desired)
+            result['selected'] = desired
+
+        self._update_summary()
+
+    def _sync_select_all(self):
+        safe_items = [r for r in self.results if r['rule'].risk_level in ("safe", "low")]
+        if not safe_items:
+            self.select_all_checkbox.configure(state="disabled")
+            self.select_all_var.set(False)
+            return
+
+        all_selected = all(item.get('selected') for item in safe_items)
+        self.select_all_checkbox.configure(state="normal")
+        self.select_all_var.set(all_selected)
+
+    def _update_summary(self):
+        if not self.results:
+            self.summary_label.configure(text="暂无可清理项目。")
+            self.clean_btn.configure(state="disabled", text="一键清理")
+            return
+
+        selected = [r for r in self.results if r.get('selected')]
+        if not selected:
+            self.summary_label.configure(text="请勾选需要清理的目录。")
+            self.clean_btn.configure(state="disabled", text="一键清理")
+            return
+
+        total_size = sum(item['total_size'] for item in selected)
+        total_count = sum(item['file_count'] for item in selected)
+        self.summary_label.configure(
+            text=f"已选择 {len(selected)} 项 · 预计释放 {self.format_size(total_size)}（{total_count} 个文件）"
+        )
+        self.clean_btn.configure(state="normal", text="一键清理")
+
+    def _open_path(self, path: str):
+        try:
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    os.startfile(path)
+                else:
+                    os.startfile(os.path.dirname(path))
+        except Exception as e:
+            messagebox.showwarning("无法打开路径", f"无法定位到 {path}\n{e}")
+
+    def _start_cleanup(self):
+        if self.running:
+            return
+        selected = [r for r in self.results if r.get('selected')]
+        if not selected:
+            messagebox.showinfo("提示", "请先勾选需要清理的缓存目录。")
+            return
+
+        confirm = messagebox.askyesno(
+            "确认清理",
+            "将删除所选 AppData 缓存、日志等目录，可能无法恢复。是否继续？"
+        )
+        if not confirm:
+            return
+
+        self.running = True
+        self.clean_btn.configure(state="disabled", text="清理中…")
+        self.scan_btn.configure(state="disabled")
+        thread = threading.Thread(target=self._run_cleanup, args=(selected,), daemon=True)
+        thread.start()
+
+    def _run_cleanup(self, selected_results: List[Dict]):
+        total_size = 0
+        total_count = 0
+        errors = []
+
+        try:
+            for result in selected_results:
+                rule = result['rule']
+
+                def progress(msg: str, current: int, total: int):
+                    status = f"{rule.name} · {msg} ({current}/{total})"
+                    if self.is_open():
+                        self.window.after(0, lambda m=status: self.status_label.configure(text=m))
+
+                exec_result = CleanupExecutor.clean(result, progress_callback=progress)
+                total_size += exec_result['deleted_size']
+                total_count += exec_result['deleted_count']
+                errors.extend(exec_result['errors'])
+
+            if self.is_open():
+                self.window.after(0, lambda: self._on_cleanup_complete(total_size, total_count, errors))
+        except Exception as e:
+            if self.is_open():
+                self.window.after(0, lambda: self._on_cleanup_error(str(e)))
+
+    def _on_cleanup_complete(self, freed_size: int, deleted_count: int, errors: List[str]):
+        self.running = False
+        self.clean_btn.configure(state="normal", text="一键清理")
+        self.scan_btn.configure(state="normal", text="重新扫描")
+
+        summary = f"清理完成，释放 {self.format_size(freed_size)} · 删除 {deleted_count} 个文件"
+        if errors:
+            self.status_label.configure(text="部分项目清理失败")
+            detail = "\n".join(errors[:5])
+            messagebox.showwarning("清理完成（部分失败）", f"{summary}\n\n部分路径无法删除：\n{detail}")
+        else:
+            self.status_label.configure(text="清理完成")
+            messagebox.showinfo("清理完成", summary)
+
+        self._start_scan()
+
+    def _on_cleanup_error(self, message: str):
+        self.running = False
+        self.clean_btn.configure(state="normal", text="一键清理")
+        self.scan_btn.configure(state="normal", text="重新扫描")
+        self.status_label.configure(text="清理失败")
+        messagebox.showerror("清理失败", f"执行 AppData 清理时出现错误：{message}")

@@ -6,7 +6,7 @@ import hashlib
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
-from PIL import Image, ImageTk
+from PIL import Image
 import customtkinter as ctk
 from tkinter import filedialog, Menu
 import json
@@ -152,6 +152,9 @@ class ImageGalleryWindow:
         self.current_display_folder = None
         self.load_seq = 0
         self.thumb_executor = ThreadPoolExecutor(max_workers=4)
+
+        # 禁用 DPI 缩放检查，避免与 pystray 线程冲突
+        ctk.deactivate_automatic_dpi_awareness()
 
         self.window = ctk.CTk()
         self.window.title("图片浏览器")
@@ -375,8 +378,21 @@ class ImageGalleryWindow:
         seq = self.load_seq
         self.current_display_folder = path
 
+        # 安全清理所有子部件
         for widget in self.preview.winfo_children():
-            widget.destroy()
+            try:
+                # 解除所有事件绑定
+                widget.unbind("<Enter>")
+                widget.unbind("<Leave>")
+                widget.unbind("<Button-3>")
+                widget.unbind("<Button-1>")
+            except:
+                pass
+            try:
+                widget.destroy()
+            except Exception as e:
+                # 忽略销毁错误，继续下一个
+                pass
         self.thumbnail_refs.clear()
 
         image_paths = []
@@ -484,8 +500,11 @@ class ImageGalleryWindow:
                     try:
                         with Image.open(cache_file) as pil_img:
                             img_copy = pil_img.copy()
-                        tk_img = ImageTk.PhotoImage(
-                            img_copy, master=self.window
+                        # 使用 CTkImage 替代 PhotoImage，支持高DPI缩放
+                        tk_img = ctk.CTkImage(
+                            light_image=img_copy,
+                            dark_image=img_copy,
+                            size=img_copy.size
                         )
                         self.thumbnail_refs.append(tk_img)
                         self._place_widget(
@@ -531,6 +550,26 @@ class ImageGalleryWindow:
         self.window.mainloop()
 
     def _on_closing(self):
+        """安全关闭窗口"""
         HoverTooltip.clear()
         self.thumb_executor.shutdown(wait=False)
-        self.window.destroy()
+
+        # 安全清理所有预览小部件
+        try:
+            for widget in self.preview.winfo_children():
+                try:
+                    widget.unbind("<Enter>")
+                    widget.unbind("<Leave>")
+                    widget.unbind("<Button-3>")
+                    widget.unbind("<Button-1>")
+                except:
+                    pass
+        except:
+            pass
+
+        self.thumbnail_refs.clear()
+
+        try:
+            self.window.destroy()
+        except:
+            pass

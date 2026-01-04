@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(dir /B /S *.py)",
+      "Bash(findstr:*)",
+      "Bash(tree:*)"
+    ]
+  }
+}

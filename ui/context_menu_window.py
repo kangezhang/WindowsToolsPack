@@ -25,6 +25,9 @@ class ContextMenuWindow:
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
 
+        # 禁用 DPI 缩放检查，避免与 pystray 线程冲突
+        ctk.deactivate_automatic_dpi_awareness()
+
         self.window = ctk.CTk()
         self.window.title("右键菜单管理器")
         self.window.geometry("900x600")
