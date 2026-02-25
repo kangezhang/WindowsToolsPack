@@ -29,7 +29,7 @@ class ImageGalleryFeature(CrossPlatformFeatureBase):
         try:
             from ui.image_gallery_window import ImageGalleryWindow
 
-            # 关键修复：在主线程延迟创建窗口
+            # 在独立线程中创建窗口
             def open_window():
                 import tkinter as tk
                 root = tk.Tk()
@@ -38,7 +38,8 @@ class ImageGalleryFeature(CrossPlatformFeatureBase):
                 root.after(100, window.show)
                 root.mainloop()
 
-            threading.Thread(target=open_window, daemon=True).start()
+            # 使用非守护线程，确保窗口可以正常运行
+            threading.Thread(target=open_window, daemon=False).start()
             return True
         except Exception as e:
             print(f"启动失败: {e}")

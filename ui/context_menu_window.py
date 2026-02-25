@@ -1,20 +1,25 @@
 import threading
 import customtkinter as ctk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from core.context_menu_manager import ContextMenuManager
+from utils.icon_utils import get_icon_manager, Icons
 
 
 class ContextMenuWindow:
-    """右键菜单管理窗口"""
+    """右键菜单管理窗口 - 现代化设计"""
 
     def __init__(self, parent_app):
         self.parent_app = parent_app
         self.window = None
-        self.tree = None
         self.menus = []
         self.search_var = None
         self.category_var = None
-        self.status_var = None
+        self.status_label = None
+        self.menu_container = None
+        self.selected_items = set()
+
+        # 初始化图标管理器
+        self.icon_manager = get_icon_manager(icon_size=18)
 
     def show(self):
         """显示管理窗口"""
@@ -30,7 +35,8 @@ class ContextMenuWindow:
 
         self.window = ctk.CTk()
         self.window.title("右键菜单管理器")
-        self.window.geometry("900x600")
+        self.window.geometry("1100x700")
+        self.window.minsize(900, 600)
 
         self._create_widgets()
         self._load_menus()
@@ -39,79 +45,179 @@ class ContextMenuWindow:
 
     def _create_widgets(self):
         """创建界面组件"""
-        # 顶部工具栏
-        toolbar = ctk.CTkFrame(self.window)
-        toolbar.pack(side="top", fill="x", padx=5, pady=5)
+        # 标题栏
+        header = ctk.CTkFrame(self.window, height=80, fg_color="#1a1a1a")
+        header.pack(fill="x", padx=0, pady=0)
+        header.pack_propagate(False)
 
-        ctk.CTkButton(toolbar, text="🔄 刷新", command=self._load_menus, width=80).pack(side="left", padx=2)
-        ctk.CTkButton(toolbar, text="❌ 禁用选中", command=self._disable_selected, width=100).pack(side="left", padx=2)
-        ctk.CTkButton(toolbar, text="✅ 启用选中", command=self._enable_selected, width=100).pack(side="left", padx=2)
-        ctk.CTkButton(toolbar, text="🗑️ 删除选中", command=self._delete_selected, width=100).pack(side="left", padx=2)
+        ctk.CTkLabel(
+            header,
+            text="右键菜单管理器",
+            font=ctk.CTkFont(size=24, weight="bold")
+        ).pack(side="left", padx=20, pady=20)
 
-        ctk.CTkLabel(toolbar, text="  提示: 删除操作不可恢复，请谨慎！", text_color="red").pack(side="left", padx=10)
+        # 工具栏按钮
+        btn_frame = ctk.CTkFrame(header, fg_color="transparent")
+        btn_frame.pack(side="right", padx=20)
 
-        # 搜索框
-        search_frame = ctk.CTkFrame(self.window)
-        search_frame.pack(side="top", fill="x", padx=5, pady=5)
+        ctk.CTkButton(
+            btn_frame,
+            text="刷新",
+            image=self.icon_manager.get_icon(Icons.REFRESH),
+            compound="left",
+            command=self._load_menus,
+            width=100,
+            height=36,
+            fg_color="#2b2b2b",
+            hover_color="#3a3a3a"
+        ).pack(side="left", padx=3)
 
-        ctk.CTkLabel(search_frame, text="搜索:").pack(side="left", padx=2)
+        ctk.CTkButton(
+            btn_frame,
+            text="禁用",
+            image=self.icon_manager.get_icon(Icons.X_CIRCLE),
+            compound="left",
+            command=self._disable_selected,
+            width=100,
+            height=36,
+            fg_color="#d7263d",
+            hover_color="#a61b2a"
+        ).pack(side="left", padx=3)
+
+        ctk.CTkButton(
+            btn_frame,
+            text="启用",
+            image=self.icon_manager.get_icon(Icons.CHECK_CIRCLE),
+            compound="left",
+            command=self._enable_selected,
+            width=100,
+            height=36,
+            fg_color="#2ca02c",
+            hover_color="#1f7a1f"
+        ).pack(side="left", padx=3)
+
+        ctk.CTkButton(
+            btn_frame,
+            text="删除",
+            image=self.icon_manager.get_icon(Icons.TRASH),
+            compound="left",
+            command=self._delete_selected,
+            width=100,
+            height=36,
+            fg_color="#d7263d",
+            hover_color="#a61b2a"
+        ).pack(side="left", padx=3)
+
+        # 搜索和筛选栏
+        search_frame = ctk.CTkFrame(self.window, fg_color="transparent")
+        search_frame.pack(fill="x", padx=20, pady=(10, 5))
+
+        ctk.CTkLabel(
+            search_frame,
+            text="搜索:",
+            font=ctk.CTkFont(size=13)
+        ).pack(side="left", padx=(0, 5))
+
         self.search_var = ctk.StringVar()
         self.search_var.trace('w', lambda *args: self._filter_menus())
-        ctk.CTkEntry(search_frame, textvariable=self.search_var, width=300).pack(side="left", padx=2)
+        search_entry = ctk.CTkEntry(
+            search_frame,
+            textvariable=self.search_var,
+            width=300,
+            height=36,
+            placeholder_text="输入菜单名称或命令..."
+        )
+        search_entry.pack(side="left", padx=5)
 
-        ctk.CTkLabel(search_frame, text="分类:").pack(side="left", padx=(20, 2))
+        ctk.CTkLabel(
+            search_frame,
+            text="分类:",
+            font=ctk.CTkFont(size=13)
+        ).pack(side="left", padx=(20, 5))
+
         self.category_var = ctk.StringVar(value="全部")
         category_combo = ctk.CTkComboBox(
             search_frame,
             variable=self.category_var,
             values=["全部", "文件", "文件夹", "文件夹背景", "驱动器"],
             width=150,
+            height=36,
             command=lambda e: self._filter_menus()
         )
-        category_combo.pack(side="left", padx=2)
+        category_combo.pack(side="left", padx=5)
 
-        # 主内容区域 - Treeview
-        main_frame = ctk.CTkFrame(self.window)
-        main_frame.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+        # 统计信息
+        self.status_label = ctk.CTkLabel(
+            search_frame,
+            text="",
+            font=ctk.CTkFont(size=12),
+            text_color="#888888"
+        )
+        self.status_label.pack(side="right", padx=10)
 
-        columns = ("name", "category", "command", "status")
-        self.tree = ttk.Treeview(main_frame, columns=columns, show="tree headings", selectmode="extended")
+        # 表头
+        header_frame = ctk.CTkFrame(self.window, height=40, fg_color="#2b2b2b")
+        header_frame.pack(fill="x", padx=20, pady=(10, 0))
+        header_frame.pack_propagate(False)
 
-        self.tree.heading("#0", text="")
-        self.tree.column("#0", width=30)
-        self.tree.heading("name", text="菜单名称")
-        self.tree.column("name", width=200)
-        self.tree.heading("category", text="分类")
-        self.tree.column("category", width=100)
-        self.tree.heading("command", text="命令路径")
-        self.tree.column("command", width=400)
-        self.tree.heading("status", text="状态")
-        self.tree.column("status", width=80)
+        ctk.CTkLabel(
+            header_frame,
+            text="菜单名称",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            width=250,
+            anchor="w"
+        ).pack(side="left", padx=(15, 5))
 
-        vsb = ttk.Scrollbar(main_frame, orient="vertical", command=self.tree.yview)
-        hsb = ttk.Scrollbar(main_frame, orient="horizontal", command=self.tree.xview)
-        self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        ctk.CTkLabel(
+            header_frame,
+            text="分类",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            width=100,
+            anchor="w"
+        ).pack(side="left", padx=5)
 
-        self.tree.grid(row=0, column=0, sticky="nsew")
-        vsb.grid(row=0, column=1, sticky="ns")
-        hsb.grid(row=1, column=0, sticky="ew")
+        ctk.CTkLabel(
+            header_frame,
+            text="命令路径",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            anchor="w"
+        ).pack(side="left", fill="x", expand=True, padx=5)
 
-        main_frame.grid_rowconfigure(0, weight=1)
-        main_frame.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(
+            header_frame,
+            text="状态",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            width=80,
+            anchor="center"
+        ).pack(side="right", padx=15)
 
-        self.tree.bind("<Double-1>", self._show_details)
+        # 主内容区域 - 可滚动列表
+        self.menu_container = ctk.CTkScrollableFrame(
+            self.window,
+            fg_color="transparent"
+        )
+        self.menu_container.pack(fill="both", expand=True, padx=20, pady=(0, 10))
 
-        # 底部状态栏
-        status_frame = ctk.CTkFrame(self.window)
-        status_frame.pack(side="bottom", fill="x")
-        
-        self.status_var = ctk.StringVar(value="就绪")
-        ctk.CTkLabel(status_frame, textvariable=self.status_var).pack(side="left", padx=5, pady=2)
+        # 底部提示
+        footer = ctk.CTkFrame(self.window, height=40, fg_color="#1a1a1a")
+        footer.pack(fill="x", padx=0, pady=0)
+        footer.pack_propagate(False)
+
+        ctk.CTkLabel(
+            footer,
+            text="💡 提示：点击选择菜单项，双击查看详情，删除操作不可恢复请谨慎！",
+            font=ctk.CTkFont(size=11),
+            text_color="#888888"
+        ).pack(side="left", padx=20, pady=10)
 
     def _load_menus(self):
         """加载右键菜单列表"""
-        self.status_var.set("正在加载...")
-        self.tree.delete(*self.tree.get_children())
+        self.status_label.configure(text="正在加载...")
+        self.selected_items.clear()
+
+        # 清空容器
+        for widget in self.menu_container.winfo_children():
+            widget.destroy()
 
         def load_thread():
             self.menus = ContextMenuManager.get_all_context_menus()
@@ -121,64 +227,131 @@ class ContextMenuWindow:
 
     def _display_menus(self):
         """显示菜单列表"""
-        self.tree.delete(*self.tree.get_children())
+        # 清空容器
+        for widget in self.menu_container.winfo_children():
+            widget.destroy()
 
-        for menu in self.menus:
-            icon = "🔧" if menu['is_system'] else "📦"
-            status = "系统" if menu['is_system'] else "第三方"
+        self.selected_items.clear()
 
-            self.tree.insert("", "end", values=(
-                menu['name'],
-                menu['category'],
-                menu['command'][:80] + "..." if len(menu['command']) > 80 else menu['command'],
-                status
-            ), tags=(menu['registry_path'],))
+        for idx, menu in enumerate(self.menus):
+            self._create_menu_item(menu, idx)
 
-        self.status_var.set(f"共找到 {len(self.menus)} 个右键菜单项")
+        self.status_label.configure(text=f"共 {len(self.menus)} 个菜单项")
+
+    def _create_menu_item(self, menu, idx):
+        """创建单个菜单项"""
+        # 主容器
+        item_frame = ctk.CTkFrame(
+            self.menu_container,
+            fg_color="#2b2b2b" if idx % 2 == 0 else "#252525",
+            corner_radius=6
+        )
+        item_frame.pack(fill="x", pady=2, padx=5)
+
+        # 选择框
+        checkbox_var = ctk.BooleanVar(value=False)
+        checkbox = ctk.CTkCheckBox(
+            item_frame,
+            text="",
+            variable=checkbox_var,
+            width=20,
+            command=lambda m=menu, v=checkbox_var: self._toggle_selection(m, v)
+        )
+        checkbox.pack(side="left", padx=(10, 5), pady=10)
+
+        # 图标
+        icon = "🔧" if menu['is_system'] else "📦"
+        ctk.CTkLabel(
+            item_frame,
+            text=icon,
+            font=ctk.CTkFont(size=16),
+            width=30
+        ).pack(side="left", padx=5)
+
+        # 菜单名称
+        name_label = ctk.CTkLabel(
+            item_frame,
+            text=menu['name'],
+            font=ctk.CTkFont(size=13),
+            width=220,
+            anchor="w"
+        )
+        name_label.pack(side="left", padx=5)
+        name_label.bind("<Double-Button-1>", lambda e, m=menu: self._show_details_for_menu(m))
+
+        # 分类
+        category_label = ctk.CTkLabel(
+            item_frame,
+            text=menu['category'],
+            font=ctk.CTkFont(size=12),
+            width=90,
+            anchor="w",
+            text_color="#888888"
+        )
+        category_label.pack(side="left", padx=5)
+
+        # 命令路径
+        command_text = menu['command'][:60] + "..." if len(menu['command']) > 60 else menu['command']
+        command_label = ctk.CTkLabel(
+            item_frame,
+            text=command_text,
+            font=ctk.CTkFont(size=11),
+            anchor="w",
+            text_color="#666666"
+        )
+        command_label.pack(side="left", fill="x", expand=True, padx=5)
+
+        # 状态标签
+        status_text = "系统" if menu['is_system'] else "第三方"
+        status_color = "#1f6aa5" if menu['is_system'] else "#2ca02c"
+        status_label = ctk.CTkLabel(
+            item_frame,
+            text=status_text,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            width=70,
+            fg_color=status_color,
+            corner_radius=4,
+            text_color="white"
+        )
+        status_label.pack(side="right", padx=10, pady=8)
+
+    def _toggle_selection(self, menu, var):
+        """切换选择状态"""
+        if var.get():
+            self.selected_items.add(menu['registry_path'])
+        else:
+            self.selected_items.discard(menu['registry_path'])
 
     def _filter_menus(self):
         """筛选菜单"""
         search_text = self.search_var.get().lower()
         category = self.category_var.get()
 
-        self.tree.delete(*self.tree.get_children())
+        # 清空容器
+        for widget in self.menu_container.winfo_children():
+            widget.destroy()
 
+        self.selected_items.clear()
         filtered_count = 0
-        for menu in self.menus:
+
+        for idx, menu in enumerate(self.menus):
             if category != "全部" and menu['category'] != category:
                 continue
 
             if search_text and search_text not in menu['name'].lower() and search_text not in menu['command'].lower():
                 continue
 
-            icon = "🔧" if menu['is_system'] else "📦"
-            status = "系统" if menu['is_system'] else "第三方"
-
-            self.tree.insert("", "end", values=(
-                menu['name'],
-                menu['category'],
-                menu['command'][:80] + "..." if len(menu['command']) > 80 else menu['command'],
-                status
-            ), tags=(menu['registry_path'],))
-
+            self._create_menu_item(menu, filtered_count)
             filtered_count += 1
 
-        self.status_var.set(f"显示 {filtered_count} / {len(self.menus)} 个菜单项")
+        self.status_label.configure(text=f"显示 {filtered_count} / {len(self.menus)} 个菜单项")
 
     def _get_selected_menus(self):
         """获取选中的菜单项"""
-        selected_items = self.tree.selection()
         selected_menus = []
-
-        for item in selected_items:
-            tags = self.tree.item(item)['tags']
-            if tags:
-                registry_path = tags[0]
-                for menu in self.menus:
-                    if menu['registry_path'] == registry_path:
-                        selected_menus.append(menu)
-                        break
-
+        for menu in self.menus:
+            if menu['registry_path'] in self.selected_items:
+                selected_menus.append(menu)
         return selected_menus
 
     def _disable_selected(self):
@@ -257,33 +430,65 @@ class ContextMenuWindow:
         messagebox.showinfo("完成", f"已删除 {success_count}/{len(selected)} 个菜单项")
         self._load_menus()
 
-    def _show_details(self, event):
-        """显示详细信息"""
-        selected = self._get_selected_menus()
-        if not selected:
-            return
-
-        menu = selected[0]
-
+    def _show_details_for_menu(self, menu):
+        """显示菜单详细信息"""
         detail_window = ctk.CTkToplevel(self.window)
         detail_window.title(f"详细信息 - {menu['name']}")
-        detail_window.geometry("600x400")
+        detail_window.geometry("700x500")
+        detail_window.transient(self.window)
 
-        text = ctk.CTkTextbox(detail_window, wrap="word")
-        text.pack(fill="both", expand=True, padx=10, pady=10)
+        # 标题
+        header = ctk.CTkFrame(detail_window, height=60, fg_color="#1a1a1a")
+        header.pack(fill="x")
+        header.pack_propagate(False)
 
-        details = f"""菜单名称: {menu['name']}
-键名: {menu['key_name']}
-分类: {menu['category']}
-类型: {"系统菜单" if menu['is_system'] else "第三方菜单"}
-注册表路径: {menu['registry_path']}
+        icon = "🔧" if menu['is_system'] else "📦"
+        ctk.CTkLabel(
+            header,
+            text=f"{icon} {menu['name']}",
+            font=ctk.CTkFont(size=18, weight="bold")
+        ).pack(side="left", padx=20, pady=15)
 
-命令:
-{menu['command']}
+        # 内容区域
+        content = ctk.CTkScrollableFrame(detail_window)
+        content.pack(fill="both", expand=True, padx=20, pady=20)
 
-图标:
-{menu['icon'] if menu['icon'] else '(无)'}
-"""
+        details = [
+            ("菜单名称", menu['name']),
+            ("键名", menu['key_name']),
+            ("分类", menu['category']),
+            ("类型", "系统菜单" if menu['is_system'] else "第三方菜单"),
+            ("注册表路径", menu['registry_path']),
+            ("命令", menu['command']),
+            ("图标", menu['icon'] if menu['icon'] else '(无)'),
+        ]
 
-        text.insert("1.0", details)
-        text.configure(state="disabled")
+        for label, value in details:
+            item_frame = ctk.CTkFrame(content, fg_color="#2b2b2b", corner_radius=6)
+            item_frame.pack(fill="x", pady=5)
+
+            ctk.CTkLabel(
+                item_frame,
+                text=label + ":",
+                font=ctk.CTkFont(size=13, weight="bold"),
+                anchor="w",
+                width=120
+            ).pack(side="left", padx=15, pady=10)
+
+            ctk.CTkLabel(
+                item_frame,
+                text=value,
+                font=ctk.CTkFont(size=12),
+                anchor="w",
+                text_color="#cccccc",
+                wraplength=500
+            ).pack(side="left", fill="x", expand=True, padx=10, pady=10)
+
+        # 关闭按钮
+        ctk.CTkButton(
+            detail_window,
+            text="关闭",
+            command=detail_window.destroy,
+            width=120,
+            height=36
+        ).pack(pady=(0, 20))

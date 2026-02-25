@@ -10,6 +10,7 @@ from PIL import Image
 import customtkinter as ctk
 from tkinter import filedialog, Menu
 import json
+from utils.icon_utils import get_icon_manager, Icons
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -152,6 +153,11 @@ class ImageGalleryWindow:
         self.current_display_folder = None
         self.load_seq = 0
         self.thumb_executor = ThreadPoolExecutor(max_workers=4)
+        self.pending_after_ids = []  # 跟踪所有 after() 调用
+        self.is_closing = False  # 标记窗口是否正在关闭
+
+        # 初始化图标管理器
+        self.icon_manager = get_icon_manager(icon_size=18)
 
         # 禁用 DPI 缩放检查，避免与 pystray 线程冲突
         ctk.deactivate_automatic_dpi_awareness()
@@ -208,8 +214,10 @@ class ImageGalleryWindow:
 
         ctk.CTkButton(
             header,
-            text="＋",
-            width=60,
+            text="添加",
+            image=self.icon_manager.get_icon(Icons.PLUS),
+            compound="left",
+            width=80,
             height=36,
             corner_radius=18,
             fg_color="#1f6aa5",
@@ -422,10 +430,11 @@ class ImageGalleryWindow:
 
         def start():
             scan(path)
-            if seq == self.load_seq:
-                self.window.after(
+            if seq == self.load_seq and not self.is_closing:
+                after_id = self.window.after(
                     0, lambda: self._display_images(image_paths, seq)
                 )
+                self.pending_after_ids.append(after_id)
 
         threading.Thread(target=start, daemon=True).start()
 
@@ -495,7 +504,7 @@ class ImageGalleryWindow:
                         )
 
                 def create():
-                    if seq != self.load_seq:
+                    if seq != self.load_seq or self.is_closing:
                         return
                     try:
                         with Image.open(cache_file) as pil_img:
@@ -513,7 +522,9 @@ class ImageGalleryWindow:
                     except Exception as e:
                         print(f"创建缩略图失败 {original_path}: {e}")
 
-                self.window.after(0, create)
+                if not self.is_closing:
+                    after_id = self.window.after(0, create)
+                    self.pending_after_ids.append(after_id)
             except Exception as e:
                 print(f"缩略图任务失败 {original_path}: {e}")
 
@@ -551,6 +562,16 @@ class ImageGalleryWindow:
 
     def _on_closing(self):
         """安全关闭窗口"""
+        self.is_closing = True  # 标记窗口正在关闭
+
+        # 取消所有待处理的 after() 回调
+        for after_id in self.pending_after_ids:
+            try:
+                self.window.after_cancel(after_id)
+            except:
+                pass
+        self.pending_after_ids.clear()
+
         HoverTooltip.clear()
         self.thumb_executor.shutdown(wait=False)
 
@@ -570,6 +591,7 @@ class ImageGalleryWindow:
         self.thumbnail_refs.clear()
 
         try:
-            self.window.destroy()
+            self.window.quit()  # 先退出事件循环
+            self.window.destroy()  # 再销毁窗口
         except:
             pass

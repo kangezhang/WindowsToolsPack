@@ -13,6 +13,7 @@ from core.cleanup_rules import (
     CleanupScanner,
     get_appdata_specific_rules,
 )
+from utils.icon_utils import get_icon_manager, Icons
 
 try:
     import customtkinter as ctk
@@ -30,9 +31,6 @@ class DiskVisualizerWindow:
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
 
-        # 禁用 DPI 缩放检查，避免与 pystray 线程冲突
-        ctk.deactivate_automatic_dpi_awareness()
-
         self.window = ctk.CTk()
         self.window.title("磁盘空间可视化工具")
         self.window.geometry("1100x750")
@@ -45,6 +43,9 @@ class DiskVisualizerWindow:
         self.scanning = False
 
         self.cleanup_dialog = None
+
+        # 初始化图标管理器
+        self.icon_manager = get_icon_manager(icon_size=18)
 
         self._create_ui()
         self._goto_home_or_select()
@@ -76,7 +77,19 @@ class DiskVisualizerWindow:
         ctk.CTkButton(
             toolbar,
             text="浏览",
+            image=self.icon_manager.get_icon(Icons.FOLDER_OPEN),
+            compound="left",
             command=self._browse_folder,
+            width=90,
+            height=38
+        ).pack(side="left", padx=3)
+
+        ctk.CTkButton(
+            toolbar,
+            text="打开",
+            image=self.icon_manager.get_icon(Icons.EXTERNAL_LINK),
+            compound="left",
+            command=self._open_current_folder,
             width=90,
             height=38
         ).pack(side="left", padx=3)
@@ -84,6 +97,8 @@ class DiskVisualizerWindow:
         self.scan_btn = ctk.CTkButton(
             toolbar,
             text="开始分析",
+            image=self.icon_manager.get_icon(Icons.SEARCH),
+            compound="left",
             command=self._start_scan_current,
             width=120,
             height=38,
@@ -92,6 +107,21 @@ class DiskVisualizerWindow:
             hover_color="#144870"
         )
         self.scan_btn.pack(side="left", padx=3)
+
+        # 一键清理按钮
+        if SystemDetector.is_windows():
+            ctk.CTkButton(
+                toolbar,
+                text="一键清理",
+                image=self.icon_manager.get_icon(Icons.TRASH),
+                compound="left",
+                command=self._quick_cleanup,
+                width=120,
+                height=38,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                fg_color="#d7263d",
+                hover_color="#a61b2a"
+            ).pack(side="left", padx=3)
 
         # === 面包屑导航栏 ===
         self.breadcrumb_frame = ctk.CTkFrame(self.window, height=50)
@@ -138,6 +168,31 @@ class DiskVisualizerWindow:
             self.path_entry.delete(0, tk.END)
             self.path_entry.insert(0, folder)
 
+    def _open_current_folder(self):
+        """打开当前路径的文件夹"""
+        path = self.path_entry.get().strip()
+        if not path:
+            messagebox.showinfo("提示", "请先选择或输入一个路径")
+            return
+
+        path = os.path.normpath(path)
+        if not os.path.exists(path):
+            messagebox.showwarning("路径不存在", f"路径不存在：{path}")
+            return
+
+        try:
+            if SystemDetector.is_windows():
+                os.startfile(path)
+            elif SystemDetector.is_macos():
+                import subprocess
+                subprocess.run(["open", path])
+            else:
+                # Linux
+                import subprocess
+                subprocess.run(["xdg-open", path])
+        except Exception as e:
+            messagebox.showerror("打开失败", f"无法打开文件夹：{e}")
+
     def _goto_home_or_select(self):
         """首次打开时自动弹出选择对话框"""
         self.window.after(300, self._browse_folder)
@@ -150,8 +205,10 @@ class DiskVisualizerWindow:
         # 首页按钮
         home_btn = ctk.CTkButton(
             self.breadcrumb_scroll,
-            text="🏠 Home",
-            width=80,
+            text="Home",
+            image=self.icon_manager.get_icon(Icons.HOME),
+            compound="left",
+            width=90,
             height=32,
             font=ctk.CTkFont(size=11),
             command=self._goto_root
@@ -194,7 +251,9 @@ class DiskVisualizerWindow:
         if len(self.history) > 0:
             back_btn = ctk.CTkButton(
                 self.breadcrumb_scroll,
-                text="⬅ Back",
+                text="返回",
+                image=self.icon_manager.get_icon(Icons.ARROW_LEFT),
+                compound="left",
                 width=90,
                 height=32,
                 command=self._go_back
@@ -347,12 +406,12 @@ class DiskVisualizerWindow:
             if self._should_show_appdata_cleanup(item_path):
                 clean_btn = ctk.CTkButton(
                     frame,
-                    text="智能清理",
+                    text="一键清理",
                     width=90,
                     height=32,
                     fg_color="#d7263d",
                     hover_color="#a61b2a",
-                    command=self._open_appdata_cleanup_dialog
+                    command=self._quick_cleanup
                 )
                 clean_btn.pack(side="left", padx=(4, 0))
 
@@ -400,6 +459,106 @@ class DiskVisualizerWindow:
             self.cleanup_dialog = None
 
         self.cleanup_dialog = AppDataCleanupDialog(self.window, self._format_size, on_close=on_close)
+
+    def _quick_cleanup(self):
+        """一键快速清理 - 直接清理所有安全缓存"""
+        if not SystemDetector.is_windows():
+            messagebox.showinfo("提示", "AppData 智能清理仅支持 Windows。")
+            return
+
+        # 确认对话框
+        confirm = messagebox.askyesno(
+            "确认清理",
+            "将自动清理所有安全的缓存文件（浏览器、开发工具、通讯软件等）\n\n"
+            "这些缓存可以安全删除，不会影响应用程序正常使用。\n\n"
+            "是否继续？"
+        )
+        if not confirm:
+            return
+
+        # 显示进度
+        progress_window = ctk.CTkToplevel(self.window)
+        progress_window.title("正在清理")
+        progress_window.geometry("500x200")
+        progress_window.transient(self.window)
+        progress_window.grab_set()
+
+        ctk.CTkLabel(
+            progress_window,
+            text="正在清理缓存，请稍候...",
+            font=ctk.CTkFont(size=16, weight="bold")
+        ).pack(pady=20)
+
+        status_label = ctk.CTkLabel(
+            progress_window,
+            text="正在扫描...",
+            font=ctk.CTkFont(size=12)
+        )
+        status_label.pack(pady=10)
+
+        progress_bar = ctk.CTkProgressBar(progress_window, mode="indeterminate")
+        progress_bar.pack(fill="x", padx=40, pady=20)
+        progress_bar.start()
+
+        # 在后台线程执行清理
+        def do_cleanup():
+            try:
+                from core.cleanup_rules import get_appdata_specific_rules, CleanupScanner, CleanupExecutor
+
+                rules = get_appdata_specific_rules()
+                scanner = CleanupScanner(rules)
+
+                def update_status(msg: str):
+                    if progress_window.winfo_exists():
+                        progress_window.after(0, lambda: status_label.configure(text=msg))
+
+                # 扫描
+                results = scanner.scan(progress_callback=update_status)
+
+                # 只清理安全的项目
+                safe_results = [r for r in results if r['rule'].risk_level in ('safe', 'low')]
+
+                total_freed = 0
+                total_deleted = 0
+                all_errors = []
+
+                # 执行清理
+                for result in safe_results:
+                    rule = result['rule']
+
+                    def progress(msg: str, current: int, total: int):
+                        status = f"正在清理: {rule.name} ({current}/{total})"
+                        if progress_window.winfo_exists():
+                            progress_window.after(0, lambda s=status: status_label.configure(text=s))
+
+                    exec_result = CleanupExecutor.clean(result, progress_callback=progress)
+                    total_freed += exec_result['deleted_size']
+                    total_deleted += exec_result['deleted_count']
+                    all_errors.extend(exec_result['errors'])
+
+                # 关闭进度窗口
+                if progress_window.winfo_exists():
+                    progress_window.after(0, progress_window.destroy)
+
+                # 显示结果
+                summary = f"清理完成！\n\n释放空间: {self._format_size(total_freed)}\n删除文件: {total_deleted} 个"
+                if all_errors:
+                    summary += f"\n\n部分文件清理失败: {len(all_errors)} 个"
+                    self.window.after(0, lambda: messagebox.showwarning("清理完成", summary))
+                else:
+                    self.window.after(0, lambda: messagebox.showinfo("清理完成", summary))
+
+                # 刷新当前视图
+                if self.current_path:
+                    self.window.after(100, lambda: self._start_scan(self.current_path, add_to_history=False))
+
+            except Exception as e:
+                if progress_window.winfo_exists():
+                    progress_window.after(0, progress_window.destroy)
+                self.window.after(0, lambda: messagebox.showerror("清理失败", f"清理过程中出现错误：{e}"))
+
+        thread = threading.Thread(target=do_cleanup, daemon=True)
+        thread.start()
 
     def _on_item_click(self, path: str):
         if os.path.isdir(path):
@@ -463,6 +622,9 @@ class AppDataCleanupDialog:
         self.scanning = False
         self.running = False
 
+        # 初始化图标管理器
+        self.icon_manager = get_icon_manager(icon_size=18)
+
         self._build_ui()
         self.window.protocol("WM_DELETE_WINDOW", self.close)
         self._start_scan()
@@ -514,6 +676,8 @@ class AppDataCleanupDialog:
         self.scan_btn = ctk.CTkButton(
             button_frame,
             text="重新扫描",
+            image=self.icon_manager.get_icon(Icons.REFRESH),
+            compound="left",
             width=120,
             command=self._start_scan
         )
@@ -522,6 +686,8 @@ class AppDataCleanupDialog:
         self.clean_btn = ctk.CTkButton(
             button_frame,
             text="一键清理",
+            image=self.icon_manager.get_icon(Icons.TRASH),
+            compound="left",
             width=120,
             fg_color="#d7263d",
             hover_color="#a61b2a",
@@ -684,6 +850,8 @@ class AppDataCleanupDialog:
                 ctk.CTkButton(
                     meta,
                     text="定位",
+                    image=self.icon_manager.get_icon(Icons.EXTERNAL_LINK, size=16),
+                    compound="left",
                     width=70,
                     height=30,
                     command=lambda p=result['paths'][0]: self._open_path(p)

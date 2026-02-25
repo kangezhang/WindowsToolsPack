@@ -22,3 +22,19 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# App runtime files
+.pending_action.json
+.claude
+
+# Build artifacts
+build/
+dist/
+*.spec.bak
+installer/
+*.exe
+*.msi
+
+# PyInstaller
+*.manifest
+*.spec.log

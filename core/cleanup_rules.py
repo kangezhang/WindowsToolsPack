@@ -282,25 +282,71 @@ def get_appdata_specific_rules() -> List[CleanupRule]:
     """获取 AppData 特定的清理规则"""
     return [
         # === 开发工具缓存 ===
-        BrowserCacheRule("VS Code", [r'Code\Cache', r'Code\CachedData', r'Code\logs']),
-        BrowserCacheRule("PyCharm", [r'JetBrains\PyCharm*\system\caches']),
-        BrowserCacheRule("IntelliJ IDEA", [r'JetBrains\IntelliJIdea*\system\caches']),
-        BrowserCacheRule("Android Studio", [r'Google\AndroidStudio*\system\caches']),
+        BrowserCacheRule("VS Code", [r'Code\Cache', r'Code\CachedData', r'Code\logs', r'Code\GPUCache']),
+        BrowserCacheRule("PyCharm", [r'JetBrains\PyCharm*\system\caches', r'JetBrains\PyCharm*\system\log']),
+        BrowserCacheRule("IntelliJ IDEA", [r'JetBrains\IntelliJIdea*\system\caches', r'JetBrains\IntelliJIdea*\system\log']),
+        BrowserCacheRule("Android Studio", [r'Google\AndroidStudio*\system\caches', r'Google\AndroidStudio*\system\log']),
+        BrowserCacheRule("WebStorm", [r'JetBrains\WebStorm*\system\caches', r'JetBrains\WebStorm*\system\log']),
+        BrowserCacheRule("Visual Studio", [r'Microsoft\VisualStudio\*\ComponentModelCache']),
+        BrowserCacheRule("Sublime Text", [r'Sublime Text*\Cache', r'Sublime Text*\Backup']),
+        BrowserCacheRule("Atom", [r'Atom\Cache', r'Atom\GPUCache', r'Atom\Code Cache']),
 
         # === 通讯软件缓存 ===
         BrowserCacheRule("Discord", [r'Discord\Cache', r'Discord\Code Cache', r'Discord\GPUCache']),
         BrowserCacheRule("Slack", [r'Slack\Cache', r'Slack\Code Cache', r'Slack\Service Worker\CacheStorage']),
         BrowserCacheRule("Microsoft Teams", [r'Microsoft\Teams\Cache', r'Microsoft\Teams\Service Worker\CacheStorage']),
         BrowserCacheRule("WeChat", [r'Tencent\WeChat\XPlugin\Plugins\RadiumWMPF\*\tmp']),
+        BrowserCacheRule("QQ", [r'Tencent\QQ\*\Temp', r'Tencent\QQ\*\Cache']),
+        BrowserCacheRule("Zoom", [r'Zoom\logs', r'Zoom\data\VirtualBkgnd_Custom']),
+        BrowserCacheRule("Skype", [r'Skype\*\media_messaging\cache']),
+        BrowserCacheRule("Telegram", [r'Telegram Desktop\tdata\user_data\cache']),
 
         # === 娱乐软件缓存 ===
         BrowserCacheRule("Spotify", [r'Spotify\Data', r'Spotify\Storage']),
         BrowserCacheRule("Steam", [r'Steam\htmlcache', r'Steam\appcache']),
+        BrowserCacheRule("Epic Games", [r'EpicGamesLauncher\Saved\webcache', r'EpicGamesLauncher\Saved\Logs']),
+        BrowserCacheRule("Origin", [r'Origin\Cache', r'Origin\Logs']),
+        BrowserCacheRule("Battle.net", [r'Battle.net\Cache']),
+        BrowserCacheRule("Ubisoft Connect", [r'Ubisoft Game Launcher\cache']),
+
+        # === 浏览器额外缓存（仅缓存，不包括密码、历史记录、书签等） ===
+        BrowserCacheRule("Chrome Media", [r'Google\Chrome\User Data\Default\Media Cache']),
+        BrowserCacheRule("Chrome GPU", [r'Google\Chrome\User Data\Default\GPUCache']),
+        BrowserCacheRule("Chrome Service Worker", [r'Google\Chrome\User Data\Default\Service Worker\CacheStorage']),
+        BrowserCacheRule("Edge Media", [r'Microsoft\Edge\User Data\Default\Media Cache']),
+        BrowserCacheRule("Edge GPU", [r'Microsoft\Edge\User Data\Default\GPUCache']),
+        BrowserCacheRule("Edge Service Worker", [r'Microsoft\Edge\User Data\Default\Service Worker\CacheStorage']),
+        BrowserCacheRule("Brave", [r'BraveSoftware\Brave-Browser\User Data\Default\Cache']),
+        BrowserCacheRule("Opera", [r'Opera Software\Opera Stable\Cache']),
+        BrowserCacheRule("Vivaldi", [r'Vivaldi\User Data\Default\Cache']),
+
+        # === Adobe 软件缓存 ===
+        BrowserCacheRule("Adobe Creative Cloud", [r'Adobe\Adobe Creative Cloud\Cache']),
+        BrowserCacheRule("Adobe Media Cache", [r'Adobe\Common\Media Cache Files']),
+        BrowserCacheRule("Photoshop Temp", [r'Adobe\Adobe Photoshop*\AutoRecover']),
 
         # === 包管理器缓存 ===
         PipCacheRule(),
         NpmCacheRule(),
+        YarnCacheRule(),
+        ComposerCacheRule(),
+        MavenCacheRule(),
+        GradleCacheRule(),
+        NuGetCacheRule(),
         UnityCacheRule(),
+
+        # === Windows 系统缓存 ===
+        WindowsPrefetchRule(),
+        WindowsFontCacheRule(),
+        WindowsIconCacheRule(),
+        WindowsInstallerCacheRule(),
+
+        # === 其他应用缓存 ===
+        BrowserCacheRule("Notion", [r'Notion\Cache', r'Notion\Code Cache']),
+        BrowserCacheRule("Obsidian", [r'obsidian\Cache', r'obsidian\GPUCache']),
+        BrowserCacheRule("Postman", [r'Postman\Cache', r'Postman\Code Cache']),
+        BrowserCacheRule("Docker Desktop", [r'Docker\log']),
+        BrowserCacheRule("VirtualBox", [r'VirtualBox\VBoxSVC.log*']),
     ]
 
 
@@ -393,6 +439,216 @@ class DeliveryOptimizationRule(CleanupRule):
         if os.path.exists(r'C:\Windows\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache'):
             return [r'C:\Windows\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache']
         return []
+
+
+class YarnCacheRule(CleanupRule):
+    """Yarn 包管理器缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="Yarn 缓存",
+            description="Yarn 包管理器的全局缓存",
+            category="cache",
+            risk_level="safe"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+        local_appdata = os.environ.get('LOCALAPPDATA', '')
+
+        # Yarn 缓存路径
+        yarn_cache = os.path.join(local_appdata, 'Yarn', 'Cache')
+        if os.path.exists(yarn_cache):
+            paths.append(yarn_cache)
+
+        return paths
+
+
+class ComposerCacheRule(CleanupRule):
+    """PHP Composer 缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="Composer 缓存",
+            description="PHP Composer 包管理器的缓存",
+            category="cache",
+            risk_level="safe"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+        appdata = os.environ.get('APPDATA', '')
+
+        # Composer 缓存路径
+        composer_cache = os.path.join(appdata, 'Composer', 'cache')
+        if os.path.exists(composer_cache):
+            paths.append(composer_cache)
+
+        return paths
+
+
+class MavenCacheRule(CleanupRule):
+    """Maven 本地仓库缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="Maven 缓存",
+            description="Maven 构建工具的本地仓库缓存",
+            category="cache",
+            risk_level="low"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+        user_profile = os.environ.get('USERPROFILE', '')
+
+        # Maven 本地仓库
+        maven_repo = os.path.join(user_profile, '.m2', 'repository')
+        if os.path.exists(maven_repo):
+            paths.append(maven_repo)
+
+        return paths
+
+
+class GradleCacheRule(CleanupRule):
+    """Gradle 构建缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="Gradle 缓存",
+            description="Gradle 构建工具的缓存和依赖",
+            category="cache",
+            risk_level="low"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+        user_profile = os.environ.get('USERPROFILE', '')
+
+        # Gradle 缓存路径
+        gradle_cache = os.path.join(user_profile, '.gradle', 'caches')
+        if os.path.exists(gradle_cache):
+            paths.append(gradle_cache)
+
+        return paths
+
+
+class NuGetCacheRule(CleanupRule):
+    """NuGet 包缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="NuGet 缓存",
+            description=".NET NuGet 包管理器的缓存",
+            category="cache",
+            risk_level="safe"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+        local_appdata = os.environ.get('LOCALAPPDATA', '')
+
+        # NuGet 缓存路径
+        nuget_cache = os.path.join(local_appdata, 'NuGet', 'Cache')
+        if os.path.exists(nuget_cache):
+            paths.append(nuget_cache)
+
+        # NuGet HTTP 缓存
+        nuget_http = os.path.join(local_appdata, 'NuGet', 'v3-cache')
+        if os.path.exists(nuget_http):
+            paths.append(nuget_http)
+
+        return paths
+
+
+class WindowsPrefetchRule(CleanupRule):
+    """Windows 预读取文件"""
+
+    def __init__(self):
+        super().__init__(
+            name="Windows 预读取文件",
+            description="Windows 系统预读取优化文件",
+            category="cache",
+            risk_level="safe"
+        )
+
+    def get_paths(self) -> List[str]:
+        prefetch_path = r'C:\Windows\Prefetch'
+        if os.path.exists(prefetch_path):
+            return [prefetch_path]
+        return []
+
+
+class WindowsFontCacheRule(CleanupRule):
+    """Windows 字体缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="Windows 字体缓存",
+            description="Windows 字体缓存服务文件",
+            category="cache",
+            risk_level="safe"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+
+        # 字体缓存文件
+        font_cache_paths = [
+            r'C:\Windows\ServiceProfiles\LocalService\AppData\Local\FontCache',
+            r'C:\Windows\System32\FNTCACHE.DAT'
+        ]
+
+        for path in font_cache_paths:
+            if os.path.exists(path):
+                paths.append(path)
+
+        return paths
+
+
+class WindowsIconCacheRule(CleanupRule):
+    """Windows 图标缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="Windows 图标缓存",
+            description="Windows 系统图标缓存数据库",
+            category="cache",
+            risk_level="safe"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+        local_appdata = os.environ.get('LOCALAPPDATA', '')
+
+        # 图标缓存文件
+        icon_cache = os.path.join(local_appdata, 'IconCache.db')
+        if os.path.exists(icon_cache):
+            paths.append(icon_cache)
+
+        return paths
+
+
+class WindowsInstallerCacheRule(CleanupRule):
+    """Windows Installer 缓存"""
+
+    def __init__(self):
+        super().__init__(
+            name="Windows Installer 缓存",
+            description="Windows 安装程序的临时缓存文件",
+            category="cache",
+            risk_level="low"
+        )
+
+    def get_paths(self) -> List[str]:
+        paths = []
+
+        # Windows Installer 缓存
+        installer_cache = r'C:\Windows\Installer\$PatchCache$'
+        if os.path.exists(installer_cache):
+            paths.append(installer_cache)
+
+        return paths
 
 
 class CleanupScanner:

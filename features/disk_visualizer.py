@@ -51,7 +51,8 @@ class DiskVisualizerFeature(CrossPlatformFeatureBase):
                     import traceback
                     traceback.print_exc()
 
-            thread = threading.Thread(target=run_window, daemon=True)
+            # 使用非守护线程，确保窗口可以正常运行
+            thread = threading.Thread(target=run_window, daemon=False)
             thread.start()
 
             return True
@@ -110,7 +111,8 @@ class WindowsDiskVisualizerFeature(WindowsFeatureBase):
                     import traceback
                     traceback.print_exc()
 
-            thread = threading.Thread(target=run_window, daemon=True)
+            # 使用非守护线程，确保窗口可以正常运行
+            thread = threading.Thread(target=run_window, daemon=False)
             thread.start()
 
             return True

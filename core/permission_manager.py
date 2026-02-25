@@ -42,15 +42,17 @@ class WindowsPermissionManager(PermissionManagerBase):
         import os
         import sys
         import ctypes
-        
+
         try:
             if getattr(sys, 'frozen', False):
                 exe_path = sys.executable
                 params = ""
             else:
                 exe_path = sys.executable
-                params = f'"{os.path.abspath(__file__)}"'
-            
+                # 获取 main.py 的路径
+                main_script = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'main.py')
+                params = f'"{main_script}"'
+
             ctypes.windll.shell32.ShellExecuteW(
                 None, "runas", exe_path, params, None, 1
             )
