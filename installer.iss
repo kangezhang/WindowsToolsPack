@@ -39,7 +39,9 @@ ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
+#if FileExists(GetEnv('ProgramFiles(x86)') + '\\Inno Setup 6\\Languages\\ChineseSimplified.isl') || FileExists(GetEnv('ProgramFiles') + '\\Inno Setup 6\\Languages\\ChineseSimplified.isl')
 Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+#endif
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
@@ -80,6 +82,8 @@ end;
 
 // 安装前检查
 function InitializeSetup(): Boolean;
+var
+  ResultCode: Integer;
 begin
   Result := True;
   if IsAppRunning() then
