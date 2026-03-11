@@ -31,12 +31,8 @@ class ImageGalleryFeature(CrossPlatformFeatureBase):
 
             # 在独立线程中创建窗口
             def open_window():
-                import tkinter as tk
-                root = tk.Tk()
-                root.withdraw()  # 隐藏主窗口
                 window = ImageGalleryWindow(self.config_file, self.cache_dir)
-                root.after(100, window.show)
-                root.mainloop()
+                window.show()
 
             # 使用非守护线程，确保窗口可以正常运行
             threading.Thread(target=open_window, daemon=False).start()

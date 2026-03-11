@@ -141,6 +141,66 @@ class ContextMenuManager:
         except:
             return False
 
+    # Win11 经典右键菜单的注册表路径（HKCU）
+    WIN11_CLASSIC_MENU_KEY = r"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"
+
+    @staticmethod
+    def is_classic_menu_enabled():
+        """检测 Win11 是否已启用经典右键菜单"""
+        if not SystemUtils.is_windows():
+            return False
+        import winreg
+        try:
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                 ContextMenuManager.WIN11_CLASSIC_MENU_KEY)
+            winreg.CloseKey(key)
+            return True
+        except FileNotFoundError:
+            return False
+        except Exception:
+            return False
+
+    @staticmethod
+    def enable_classic_menu():
+        """启用 Win11 经典右键菜单（默认直接显示完整菜单）"""
+        if not SystemUtils.is_windows():
+            return False
+        import winreg
+        try:
+            # 逐级创建父键直到 InprocServer32
+            key = winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER,
+                                     ContextMenuManager.WIN11_CLASSIC_MENU_KEY,
+                                     0, winreg.KEY_WRITE)
+            # 默认值设为空字符串
+            winreg.SetValueEx(key, "", 0, winreg.REG_SZ, "")
+            winreg.CloseKey(key)
+            return True
+        except Exception as e:
+            print(f"启用经典右键菜单失败: {e}")
+            return False
+
+    @staticmethod
+    def disable_classic_menu():
+        """恢复 Win11 新式右键菜单"""
+        if not SystemUtils.is_windows():
+            return False
+        import winreg
+        try:
+            # 删除 InprocServer32 键，父键 CLSID\{...} 也一并清理
+            parent = r"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"
+            # 先删子键
+            winreg.DeleteKey(winreg.HKEY_CURRENT_USER,
+                             ContextMenuManager.WIN11_CLASSIC_MENU_KEY)
+            # 再删父键（如果为空）
+            try:
+                winreg.DeleteKey(winreg.HKEY_CURRENT_USER, parent)
+            except Exception:
+                pass
+            return True
+        except Exception as e:
+            print(f"恢复新式右键菜单失败: {e}")
+            return False
+
     @staticmethod
     def delete_menu(hkey, path):
         """删除右键菜单项"""

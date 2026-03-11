@@ -13,6 +13,7 @@ from features.copy_path import CopyPathFeature
 from features.disk_visualizer import DiskVisualizerFactory
 from features.image_gallery import ImageGalleryFactory   # ← 新增
 from features.force_delete import ForceDeleteFeature
+from features.open_in_vscode import OpenInVSCodeFeature
 
 from ui.preferences_window import PreferencesWindow
 
@@ -31,6 +32,7 @@ class ToolBoxApp:
             'disk_visualizer': DiskVisualizerFactory.create(),
             'image_gallery': ImageGalleryFactory.create(),   # ← 新增图片浏览器
             'force_delete': ForceDeleteFeature.create(),     # ← 新增强力删除
+            'open_in_vscode': OpenInVSCodeFeature.create(), # ← 用 VS Code 打开
             # 继续加新功能就往这里写一行...
         }
 
@@ -138,6 +140,7 @@ class ToolBoxApp:
             'image_gallery': '🖼',
             'force_delete': '🗑',
             'context_menu': '⚙',
+            'open_in_vscode': '⌨',
         }
         return icon_map.get(key, '▪')
 

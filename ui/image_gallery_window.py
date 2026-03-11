@@ -163,6 +163,11 @@ class ImageGalleryWindow:
         ctk.deactivate_automatic_dpi_awareness()
 
         self.window = ctk.CTk()
+
+        # 将此窗口设为 tkinter 的默认根，确保子线程中 CTkFont 能找到正确的 Tk 实例
+        import tkinter as tk
+        tk._default_root = self.window
+
         self.window.title("图片浏览器")
         self.window.geometry("1600x1000")
         self.window.minsize(1300, 720)

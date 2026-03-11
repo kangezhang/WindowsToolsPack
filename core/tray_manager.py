@@ -92,12 +92,12 @@ class WindowsTrayManager(TrayManagerBase):
             return
 
         if not self.icon:
-            menu = self.create_menu(self.menu_items)
+            # 使用动态菜单回调，每次打开菜单时都实时重建，保证状态始终最新
             self.icon = self.pystray.Icon(
                 self.app_name,
                 self.icon_image,
                 self.app_name,
-                menu=menu
+                menu=self.pystray.Menu(lambda: self._build_menu_items(self.menu_items))
             )
         self.icon.run()
 
@@ -107,10 +107,10 @@ class WindowsTrayManager(TrayManagerBase):
             self.icon.stop()
 
     def update_menu(self, menu_items: List[Tuple]):
-        """更新菜单"""
+        """更新菜单数据，下次打开菜单时自动生效"""
         self.menu_items = menu_items
         if self.icon:
-            self.icon.menu = self.create_menu(menu_items)
+            self.icon.update_menu()
 
     def notify(self, title: str, message: str):
         """显示通知"""

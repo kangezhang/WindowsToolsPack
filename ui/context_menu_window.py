@@ -17,9 +17,7 @@ class ContextMenuWindow:
         self.status_label = None
         self.menu_container = None
         self.selected_items = set()
-
-        # 初始化图标管理器
-        self.icon_manager = get_icon_manager(icon_size=18)
+        self.icon_manager = None
 
     def show(self):
         """显示管理窗口"""
@@ -34,6 +32,13 @@ class ContextMenuWindow:
         ctk.deactivate_automatic_dpi_awareness()
 
         self.window = ctk.CTk()
+
+        # 将此窗口设为 tkinter 的默认根，确保子线程中 CTkFont 能找到正确的 Tk 实例
+        import tkinter as tk
+        tk._default_root = self.window
+
+        # 初始化图标管理器（必须在 CTk 根窗口创建后）
+        self.icon_manager = get_icon_manager(icon_size=18)
         self.window.title("右键菜单管理器")
         self.window.geometry("1100x700")
         self.window.minsize(900, 600)
@@ -209,6 +214,57 @@ class ContextMenuWindow:
             font=ctk.CTkFont(size=11),
             text_color="#888888"
         ).pack(side="left", padx=20, pady=10)
+
+        # Win11 经典右键菜单切换按钮
+        self._classic_menu_btn = ctk.CTkButton(
+            footer,
+            text=self._get_classic_menu_label(),
+            width=180,
+            height=28,
+            fg_color="#2b2b2b",
+            hover_color="#3a3a3a",
+            font=ctk.CTkFont(size=11),
+            command=self._toggle_classic_menu
+        )
+        self._classic_menu_btn.pack(side="right", padx=20, pady=6)
+
+    def _get_classic_menu_label(self):
+        """返回当前经典菜单状态对应的按钮文字"""
+        if ContextMenuManager.is_classic_menu_enabled():
+            return "✓ 已启用经典右键菜单"
+        return "○ 切换为经典右键菜单"
+
+    def _toggle_classic_menu(self):
+        """切换 Win11 经典/新式右键菜单"""
+        if ContextMenuManager.is_classic_menu_enabled():
+            ok = ContextMenuManager.disable_classic_menu()
+            msg = "已恢复 Win11 新式右键菜单"
+        else:
+            ok = ContextMenuManager.enable_classic_menu()
+            msg = "已启用经典右键菜单（直接显示完整菜单）"
+
+        if not ok:
+            messagebox.showerror("失败", "操作失败，请检查权限")
+            return
+
+        # 更新按钮文字
+        self._classic_menu_btn.configure(text=self._get_classic_menu_label())
+
+        # 询问是否立即重启 explorer.exe
+        restart = messagebox.askyesno("完成", f"{msg}\n\n是否立即重启文件资源管理器使其生效？")
+        if restart:
+            self._restart_explorer()
+
+    @staticmethod
+    def _restart_explorer():
+        """结束并重启 explorer.exe"""
+        import subprocess
+        try:
+            subprocess.run(["taskkill", "/f", "/im", "explorer.exe"],
+                           capture_output=True)
+            subprocess.Popen(["explorer.exe"])
+        except Exception as e:
+            messagebox.showerror("失败", f"重启资源管理器失败: {e}")
 
     def _load_menus(self):
         """加载右键菜单列表"""
