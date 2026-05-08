@@ -14,6 +14,7 @@ from features.disk_visualizer import DiskVisualizerFactory
 from features.image_gallery import ImageGalleryFactory   # ← 新增
 from features.force_delete import ForceDeleteFeature
 from features.open_in_vscode import OpenInVSCodeFeature
+from features.bilibili_downloader import VideoDownloadWorkbenchFactory
 
 from ui.preferences_window import PreferencesWindow
 
@@ -33,6 +34,7 @@ class ToolBoxApp:
             'image_gallery': ImageGalleryFactory.create(),   # ← 新增图片浏览器
             'force_delete': ForceDeleteFeature.create(),     # ← 新增强力删除
             'open_in_vscode': OpenInVSCodeFeature.create(), # ← 用 VS Code 打开
+            'video_workbench': VideoDownloadWorkbenchFactory.create(), # ← 视频工作台
             # 继续加新功能就往这里写一行...
         }
 
@@ -141,6 +143,7 @@ class ToolBoxApp:
             'force_delete': '🗑',
             'context_menu': '⚙',
             'open_in_vscode': '⌨',
+            'video_workbench': '▶',
         }
         return icon_map.get(key, '▪')
 
@@ -364,6 +367,11 @@ class ToolBoxApp:
 
     def run(self):
         """主入口"""
+        if len(sys.argv) >= 2 and sys.argv[1] == "video_downloader":
+            from ui.video_download_workbench_window import run_qt_app
+            run_qt_app()
+            return
+
         # 处理命令行参数（复制路径）
         if len(sys.argv) >= 3 and sys.argv[1] == "copy":
             self.copy_path_action(sys.argv[2])
