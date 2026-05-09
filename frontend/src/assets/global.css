@@ -1,0 +1,157 @@
+:root {
+  --bg-base:    #0f1012;
+  --bg-surface: #17181c;
+  --bg-card:    #1e1f24;
+  --bg-hover:   #26272d;
+  --border:     #2e3038;
+  --border-strong: #3d3f47;
+
+  --text-primary:   #e0e0e2;
+  --text-secondary: #888b94;
+  --text-dimmed:    #4e5058;
+
+  --accent:       #e8730a;
+  --accent-hover: #d4660a;
+  --accent-dim:   rgba(232,115,10,.15);
+
+  --danger:  #e05454;
+  --success: #3aab52;
+  --warning: #d4a017;
+  --info:    #4a90d9;
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius:    5px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Microsoft YaHei UI', system-ui, sans-serif;
+  font-size: 13px;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dimmed); }
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s, opacity 0.12s, border-color 0.12s;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--text-dimmed);
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-danger {
+  background: rgba(224,84,84,.12);
+  color: var(--danger);
+  border-color: rgba(224,84,84,.25);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-xs { padding: 3px 8px;  font-size: 11px; }
+
+/* ── Card ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+/* ── Tags / Badges ── */
+.tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.tag-safe   { background: rgba(58,171,82,.12);  color: var(--success); }
+.tag-low    { background: rgba(212,160,23,.12); color: var(--warning); }
+.tag-medium { background: rgba(224,84,84,.12);  color: var(--danger); }
+.tag-high   { background: rgba(224,84,84,.2);   color: var(--danger); }
+
+.status-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+.status-waiting   { background: rgba(136,139,148,.1);  color: var(--text-secondary); }
+.status-running   { background: rgba(74,144,217,.12);  color: var(--info); }
+.status-done      { background: rgba(58,171,82,.12);   color: var(--success); }
+.status-failed    { background: rgba(224,84,84,.12);   color: var(--danger); }
+.status-cancelled { background: rgba(78,80,88,.15);    color: var(--text-dimmed); }

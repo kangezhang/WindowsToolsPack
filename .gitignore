@@ -38,3 +38,4 @@ installer/
 # PyInstaller
 *.manifest
 *.spec.log
+node_modules
