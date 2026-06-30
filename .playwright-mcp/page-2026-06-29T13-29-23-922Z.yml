@@ -1,0 +1,443 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]: 工具箱
+    - list [ref=e6]:
+      - listitem [ref=e7]:
+        - link "主页" [ref=e8] [cursor=pointer]:
+          - /url: "#/"
+      - listitem [ref=e9]:
+        - link "右键菜单" [ref=e10] [cursor=pointer]:
+          - /url: "#/context-menu"
+      - listitem [ref=e11]:
+        - link "磁盘可视化" [ref=e12] [cursor=pointer]:
+          - /url: "#/disk"
+      - listitem [ref=e13]:
+        - link "视频下载" [ref=e14] [cursor=pointer]:
+          - /url: "#/downloads"
+      - listitem [ref=e15]:
+        - link "图片画廊" [ref=e16] [cursor=pointer]:
+          - /url: "#/gallery"
+      - listitem [ref=e17]:
+        - link "磁盘清理" [ref=e18] [cursor=pointer]:
+          - /url: "#/cleanup"
+      - listitem [ref=e19]:
+        - link "偏好设置" [ref=e20] [cursor=pointer]:
+          - /url: "#/preferences"
+    - generic [ref=e23]: 后端已连接
+  - main [ref=e24]:
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - heading "磁盘清理" [level=2] [ref=e29]
+          - paragraph [ref=e30]: 先选清理范围，扫描确认后再删除。
+        - button "刷新容量" [ref=e85] [cursor=pointer]
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - button "一键安全清理 约 7.66 GB" [ref=e86] [cursor=pointer]:
+              - generic [ref=e36]: 一键安全清理
+              - strong [ref=e37]: 约 7.66 GB
+            - button "一键激进清理 日志+回收站+缓存" [ref=e38] [cursor=pointer]:
+              - generic [ref=e39]: 一键激进清理
+              - strong [ref=e40]: 日志+回收站+缓存
+            - button "扫描选中项 已选 69 类" [ref=e87] [cursor=pointer]:
+              - generic [ref=e42]: 扫描选中项
+              - strong [ref=e43]: 已选 69 类
+            - button "清理扫描结果 先扫描并勾选" [disabled] [ref=e44]:
+              - generic [ref=e45]: 清理扫描结果
+              - strong [ref=e46]: 先扫描并勾选
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - strong [ref=e49]: 清理范围
+              - text: 推荐已选 69 / 87 类
+            - generic [ref=e50]:
+              - button "推荐项" [ref=e51] [cursor=pointer]
+              - button "安全+低风险" [ref=e52] [cursor=pointer]
+              - button "激进-含模型" [ref=e53] [cursor=pointer]
+              - button "清空" [ref=e54] [cursor=pointer]
+          - generic [ref=e88]:
+            - generic "系统和用户临时文件夹中的临时文件" [ref=e89] [cursor=pointer]:
+              - checkbox "Windows 临时文件 安全" [checked] [ref=e90]
+              - generic [ref=e91]: Windows 临时文件
+              - generic [ref=e92]: 安全
+            - generic "Chrome 缓存文件" [ref=e93] [cursor=pointer]:
+              - checkbox "Chrome 缓存 安全" [checked] [ref=e94]
+              - generic [ref=e95]: Chrome 缓存
+              - generic [ref=e96]: 安全
+            - generic "Edge 缓存文件" [ref=e97] [cursor=pointer]:
+              - checkbox "Edge 缓存 安全" [checked] [ref=e98]
+              - generic [ref=e99]: Edge 缓存
+              - generic [ref=e100]: 安全
+            - generic "Firefox 缓存文件" [ref=e101] [cursor=pointer]:
+              - checkbox "Firefox 缓存 安全" [checked] [ref=e102]
+              - generic [ref=e103]: Firefox 缓存
+              - generic [ref=e104]: 安全
+            - generic "Windows 资源管理器生成的缩略图缓存" [ref=e105] [cursor=pointer]:
+              - checkbox "缩略图缓存 安全" [checked] [ref=e106]
+              - generic [ref=e107]: 缩略图缓存
+              - generic [ref=e108]: 安全
+            - generic "清空回收站中的文件" [ref=e109] [cursor=pointer]:
+              - checkbox "回收站 安全" [checked] [ref=e110]
+              - generic [ref=e111]: 回收站
+              - generic [ref=e112]: 安全
+            - generic "Windows 更新下载的临时文件" [ref=e113] [cursor=pointer]:
+              - checkbox "Windows 更新缓存 安全" [checked] [ref=e114]
+              - generic [ref=e115]: Windows 更新缓存
+              - generic [ref=e116]: 安全
+            - generic "各应用程序产生的日志文件（.log）" [ref=e117] [cursor=pointer]:
+              - checkbox "应用程序日志 低风险" [ref=e118]
+              - generic [ref=e119]: 应用程序日志
+              - generic [ref=e120]: 低风险
+            - generic "Windows 系统错误报告和崩溃转储文件" [ref=e121] [cursor=pointer]:
+              - checkbox "Windows 错误报告 安全" [checked] [ref=e122]
+              - generic [ref=e123]: Windows 错误报告
+              - generic [ref=e124]: 安全
+            - generic "Windows Update 传递优化下载的文件" [ref=e125] [cursor=pointer]:
+              - checkbox "Windows 传递优化缓存 安全" [checked] [ref=e126]
+              - generic [ref=e127]: Windows 传递优化缓存
+              - generic [ref=e128]: 安全
+            - generic "VS Code 缓存文件" [ref=e129] [cursor=pointer]:
+              - checkbox "VS Code 缓存 安全" [checked] [ref=e130]
+              - generic [ref=e131]: VS Code 缓存
+              - generic [ref=e132]: 安全
+            - generic "PyCharm 缓存文件" [ref=e133] [cursor=pointer]:
+              - checkbox "PyCharm 缓存 安全" [checked] [ref=e134]
+              - generic [ref=e135]: PyCharm 缓存
+              - generic [ref=e136]: 安全
+            - generic "IntelliJ IDEA 缓存文件" [ref=e137] [cursor=pointer]:
+              - checkbox "IntelliJ IDEA 缓存 安全" [checked] [ref=e138]
+              - generic [ref=e139]: IntelliJ IDEA 缓存
+              - generic [ref=e140]: 安全
+            - generic "Android Studio 缓存文件" [ref=e141] [cursor=pointer]:
+              - checkbox "Android Studio 缓存 安全" [checked] [ref=e142]
+              - generic [ref=e143]: Android Studio 缓存
+              - generic [ref=e144]: 安全
+            - generic "WebStorm 缓存文件" [ref=e145] [cursor=pointer]:
+              - checkbox "WebStorm 缓存 安全" [checked] [ref=e146]
+              - generic [ref=e147]: WebStorm 缓存
+              - generic [ref=e148]: 安全
+            - generic "Visual Studio 缓存文件" [ref=e149] [cursor=pointer]:
+              - checkbox "Visual Studio 缓存 安全" [checked] [ref=e150]
+              - generic [ref=e151]: Visual Studio 缓存
+              - generic [ref=e152]: 安全
+            - generic "Sublime Text 缓存文件" [ref=e153] [cursor=pointer]:
+              - checkbox "Sublime Text 缓存 安全" [checked] [ref=e154]
+              - generic [ref=e155]: Sublime Text 缓存
+              - generic [ref=e156]: 安全
+            - generic "Atom 缓存文件" [ref=e157] [cursor=pointer]:
+              - checkbox "Atom 缓存 安全" [checked] [ref=e158]
+              - generic [ref=e159]: Atom 缓存
+              - generic [ref=e160]: 安全
+            - generic "Discord 缓存文件" [ref=e161] [cursor=pointer]:
+              - checkbox "Discord 缓存 安全" [checked] [ref=e162]
+              - generic [ref=e163]: Discord 缓存
+              - generic [ref=e164]: 安全
+            - generic "Slack 缓存文件" [ref=e165] [cursor=pointer]:
+              - checkbox "Slack 缓存 安全" [checked] [ref=e166]
+              - generic [ref=e167]: Slack 缓存
+              - generic [ref=e168]: 安全
+            - generic "Microsoft Teams 缓存文件" [ref=e169] [cursor=pointer]:
+              - checkbox "Microsoft Teams 缓存 安全" [checked] [ref=e170]
+              - generic [ref=e171]: Microsoft Teams 缓存
+              - generic [ref=e172]: 安全
+            - generic "WeChat 缓存文件" [ref=e173] [cursor=pointer]:
+              - checkbox "WeChat 缓存 安全" [checked] [ref=e174]
+              - generic [ref=e175]: WeChat 缓存
+              - generic [ref=e176]: 安全
+            - generic "QQ 缓存文件" [ref=e177] [cursor=pointer]:
+              - checkbox "QQ 缓存 安全" [checked] [ref=e178]
+              - generic [ref=e179]: QQ 缓存
+              - generic [ref=e180]: 安全
+            - generic "Zoom 缓存文件" [ref=e181] [cursor=pointer]:
+              - checkbox "Zoom 缓存 安全" [checked] [ref=e182]
+              - generic [ref=e183]: Zoom 缓存
+              - generic [ref=e184]: 安全
+            - generic "Skype 缓存文件" [ref=e185] [cursor=pointer]:
+              - checkbox "Skype 缓存 安全" [checked] [ref=e186]
+              - generic [ref=e187]: Skype 缓存
+              - generic [ref=e188]: 安全
+            - generic "Telegram 缓存文件" [ref=e189] [cursor=pointer]:
+              - checkbox "Telegram 缓存 安全" [checked] [ref=e190]
+              - generic [ref=e191]: Telegram 缓存
+              - generic [ref=e192]: 安全
+            - generic "Spotify 缓存文件" [ref=e193] [cursor=pointer]:
+              - checkbox "Spotify 缓存 安全" [checked] [ref=e194]
+              - generic [ref=e195]: Spotify 缓存
+              - generic [ref=e196]: 安全
+            - generic "Steam 缓存文件" [ref=e197] [cursor=pointer]:
+              - checkbox "Steam 缓存 安全" [checked] [ref=e198]
+              - generic [ref=e199]: Steam 缓存
+              - generic [ref=e200]: 安全
+            - generic "Epic Games 缓存文件" [ref=e201] [cursor=pointer]:
+              - checkbox "Epic Games 缓存 安全" [checked] [ref=e202]
+              - generic [ref=e203]: Epic Games 缓存
+              - generic [ref=e204]: 安全
+            - generic "Origin 缓存文件" [ref=e205] [cursor=pointer]:
+              - checkbox "Origin 缓存 安全" [checked] [ref=e206]
+              - generic [ref=e207]: Origin 缓存
+              - generic [ref=e208]: 安全
+            - generic "Battle.net 缓存文件" [ref=e209] [cursor=pointer]:
+              - checkbox "Battle.net 缓存 安全" [checked] [ref=e210]
+              - generic [ref=e211]: Battle.net 缓存
+              - generic [ref=e212]: 安全
+            - generic "Ubisoft Connect 缓存文件" [ref=e213] [cursor=pointer]:
+              - checkbox "Ubisoft Connect 缓存 安全" [checked] [ref=e214]
+              - generic [ref=e215]: Ubisoft Connect 缓存
+              - generic [ref=e216]: 安全
+            - generic "Chrome Media 缓存文件" [ref=e217] [cursor=pointer]:
+              - checkbox "Chrome Media 缓存 安全" [checked] [ref=e218]
+              - generic [ref=e219]: Chrome Media 缓存
+              - generic [ref=e220]: 安全
+            - generic "Chrome GPU 缓存文件" [ref=e221] [cursor=pointer]:
+              - checkbox "Chrome GPU 缓存 安全" [checked] [ref=e222]
+              - generic [ref=e223]: Chrome GPU 缓存
+              - generic [ref=e224]: 安全
+            - generic "Chrome Service Worker 缓存文件" [ref=e225] [cursor=pointer]:
+              - checkbox "Chrome Service Worker 缓存 安全" [checked] [ref=e226]
+              - generic [ref=e227]: Chrome Service Worker 缓存
+              - generic [ref=e228]: 安全
+            - generic "Edge Media 缓存文件" [ref=e229] [cursor=pointer]:
+              - checkbox "Edge Media 缓存 安全" [checked] [ref=e230]
+              - generic [ref=e231]: Edge Media 缓存
+              - generic [ref=e232]: 安全
+            - generic "Edge GPU 缓存文件" [ref=e233] [cursor=pointer]:
+              - checkbox "Edge GPU 缓存 安全" [checked] [ref=e234]
+              - generic [ref=e235]: Edge GPU 缓存
+              - generic [ref=e236]: 安全
+            - generic "Edge Service Worker 缓存文件" [ref=e237] [cursor=pointer]:
+              - checkbox "Edge Service Worker 缓存 安全" [checked] [ref=e238]
+              - generic [ref=e239]: Edge Service Worker 缓存
+              - generic [ref=e240]: 安全
+            - generic "Brave 缓存文件" [ref=e241] [cursor=pointer]:
+              - checkbox "Brave 缓存 安全" [checked] [ref=e242]
+              - generic [ref=e243]: Brave 缓存
+              - generic [ref=e244]: 安全
+            - generic "Opera 缓存文件" [ref=e245] [cursor=pointer]:
+              - checkbox "Opera 缓存 安全" [checked] [ref=e246]
+              - generic [ref=e247]: Opera 缓存
+              - generic [ref=e248]: 安全
+            - generic "Vivaldi 缓存文件" [ref=e249] [cursor=pointer]:
+              - checkbox "Vivaldi 缓存 安全" [checked] [ref=e250]
+              - generic [ref=e251]: Vivaldi 缓存
+              - generic [ref=e252]: 安全
+            - generic "Adobe Creative Cloud 缓存文件" [ref=e253] [cursor=pointer]:
+              - checkbox "Adobe Creative Cloud 缓存 安全" [checked] [ref=e254]
+              - generic [ref=e255]: Adobe Creative Cloud 缓存
+              - generic [ref=e256]: 安全
+            - generic "Adobe Media Cache 缓存文件" [ref=e257] [cursor=pointer]:
+              - checkbox "Adobe Media Cache 缓存 安全" [checked] [ref=e258]
+              - generic [ref=e259]: Adobe Media Cache 缓存
+              - generic [ref=e260]: 安全
+            - generic "Photoshop Temp 缓存文件" [ref=e261] [cursor=pointer]:
+              - checkbox "Photoshop Temp 缓存 安全" [checked] [ref=e262]
+              - generic [ref=e263]: Photoshop Temp 缓存
+              - generic [ref=e264]: 安全
+            - generic "Python pip 包管理器的下载缓存" [ref=e265] [cursor=pointer]:
+              - checkbox "Python pip 缓存 安全" [checked] [ref=e266]
+              - generic [ref=e267]: Python pip 缓存
+              - generic [ref=e268]: 安全
+            - generic "Node.js npm 包管理器的缓存" [ref=e269] [cursor=pointer]:
+              - checkbox "npm 缓存 安全" [checked] [ref=e270]
+              - generic [ref=e271]: npm 缓存
+              - generic [ref=e272]: 安全
+            - generic "Yarn 包管理器的全局缓存" [ref=e273] [cursor=pointer]:
+              - checkbox "Yarn 缓存 安全" [checked] [ref=e274]
+              - generic [ref=e275]: Yarn 缓存
+              - generic [ref=e276]: 安全
+            - generic "PHP Composer 包管理器的缓存" [ref=e277] [cursor=pointer]:
+              - checkbox "Composer 缓存 安全" [checked] [ref=e278]
+              - generic [ref=e279]: Composer 缓存
+              - generic [ref=e280]: 安全
+            - generic "Maven 构建工具的本地仓库缓存" [ref=e281] [cursor=pointer]:
+              - checkbox "Maven 缓存 低风险" [ref=e282]
+              - generic [ref=e283]: Maven 缓存
+              - generic [ref=e284]: 低风险
+            - generic "Gradle 构建工具的缓存和依赖" [ref=e285] [cursor=pointer]:
+              - checkbox "Gradle 缓存 低风险" [ref=e286]
+              - generic [ref=e287]: Gradle 缓存
+              - generic [ref=e288]: 低风险
+            - generic ".NET NuGet 包管理器的缓存" [ref=e289] [cursor=pointer]:
+              - checkbox "NuGet 缓存 安全" [checked] [ref=e290]
+              - generic [ref=e291]: NuGet 缓存
+              - generic [ref=e292]: 安全
+            - generic "Unity 编辑器生成的 Asset Store 缓存、ShaderCache、日志等" [ref=e293] [cursor=pointer]:
+              - checkbox "Unity 缓存与日志 低风险" [ref=e294]
+              - generic [ref=e295]: Unity 缓存与日志
+              - generic [ref=e296]: 低风险
+            - generic "Windows 系统预读取优化文件" [ref=e297] [cursor=pointer]:
+              - checkbox "Windows 预读取文件 安全" [checked] [ref=e298]
+              - generic [ref=e299]: Windows 预读取文件
+              - generic [ref=e300]: 安全
+            - generic "Windows 字体缓存服务文件" [ref=e301] [cursor=pointer]:
+              - checkbox "Windows 字体缓存 安全" [checked] [ref=e302]
+              - generic [ref=e303]: Windows 字体缓存
+              - generic [ref=e304]: 安全
+            - generic "Windows 系统图标缓存数据库" [ref=e305] [cursor=pointer]:
+              - checkbox "Windows 图标缓存 安全" [checked] [ref=e306]
+              - generic [ref=e307]: Windows 图标缓存
+              - generic [ref=e308]: 安全
+            - generic "Windows 安装程序的临时缓存文件" [ref=e309] [cursor=pointer]:
+              - checkbox "Windows Installer 缓存 低风险" [ref=e310]
+              - generic [ref=e311]: Windows Installer 缓存
+              - generic [ref=e312]: 低风险
+            - generic "Notion 缓存文件" [ref=e313] [cursor=pointer]:
+              - checkbox "Notion 缓存 安全" [checked] [ref=e314]
+              - generic [ref=e315]: Notion 缓存
+              - generic [ref=e316]: 安全
+            - generic "Obsidian 缓存文件" [ref=e317] [cursor=pointer]:
+              - checkbox "Obsidian 缓存 安全" [checked] [ref=e318]
+              - generic [ref=e319]: Obsidian 缓存
+              - generic [ref=e320]: 安全
+            - generic "Postman 缓存文件" [ref=e321] [cursor=pointer]:
+              - checkbox "Postman 缓存 安全" [checked] [ref=e322]
+              - generic [ref=e323]: Postman 缓存
+              - generic [ref=e324]: 安全
+            - generic "Docker Desktop 缓存文件" [ref=e325] [cursor=pointer]:
+              - checkbox "Docker Desktop 缓存 安全" [checked] [ref=e326]
+              - generic [ref=e327]: Docker Desktop 缓存
+              - generic [ref=e328]: 安全
+            - generic "VirtualBox 缓存文件" [ref=e329] [cursor=pointer]:
+              - checkbox "VirtualBox 缓存 安全" [checked] [ref=e330]
+              - generic [ref=e331]: VirtualBox 缓存
+              - generic [ref=e332]: 安全
+            - generic "Cargo 下载的源码/注册表/git 缓存（保留 .cargo/bin 与 .rustup 工具链）" [ref=e333] [cursor=pointer]:
+              - checkbox "Rust Cargo 缓存 低风险" [ref=e334]
+              - generic [ref=e335]: Rust Cargo 缓存
+              - generic [ref=e336]: 低风险
+            - generic "rustup 安装/更新过程留下的下载缓存，可安全清理" [ref=e337] [cursor=pointer]:
+              - checkbox "rustup 下载缓存 安全" [checked] [ref=e338]
+              - generic [ref=e339]: rustup 下载缓存
+              - generic [ref=e340]: 安全
+            - generic "conda/miniconda 下载的 .tar.bz2/.conda 包缓存" [ref=e341] [cursor=pointer]:
+              - checkbox "Conda 包缓存 安全" [checked] [ref=e342]
+              - generic [ref=e343]: Conda 包缓存
+              - generic [ref=e344]: 安全
+            - generic "Poetry 包管理器的下载与 artifacts 缓存" [ref=e345] [cursor=pointer]:
+              - checkbox "Poetry 缓存 安全" [checked] [ref=e346]
+              - generic [ref=e347]: Poetry 缓存
+              - generic [ref=e348]: 安全
+            - generic "uv 包管理器的全局缓存" [ref=e349] [cursor=pointer]:
+              - checkbox "uv 缓存 安全" [checked] [ref=e350]
+              - generic [ref=e351]: uv 缓存
+              - generic [ref=e352]: 安全
+            - generic "go build cache，可用 go clean -cache 重建" [ref=e353] [cursor=pointer]:
+              - checkbox "Go 构建缓存 安全" [checked] [ref=e354]
+              - generic [ref=e355]: Go 构建缓存
+              - generic [ref=e356]: 安全
+            - generic "微信/QQ/WeCom 的临时与缓存目录（保留聊天记录与文件传输根目录）" [ref=e357] [cursor=pointer]:
+              - checkbox "腾讯系应用缓存 低风险" [ref=e358]
+              - generic [ref=e359]: 腾讯系应用缓存
+              - generic [ref=e360]: 低风险
+            - generic "WSL2 的临时与日志文件（不会动你的虚拟磁盘镜像）" [ref=e361] [cursor=pointer]:
+              - checkbox "WSL 临时与日志 安全" [checked] [ref=e362]
+              - generic [ref=e363]: WSL 临时与日志
+              - generic [ref=e364]: 安全
+            - generic "Steam/Epic/Battle.net/Riot/EA 的 htmlcache、shader 缓存与日志" [ref=e365] [cursor=pointer]:
+              - checkbox "游戏平台缓存与日志 安全" [checked] [ref=e366]
+              - generic [ref=e367]: 游戏平台缓存与日志
+              - generic [ref=e368]: 安全
+            - generic "Unity Hub 安装包下载缓存与 WebGLHost 缓存" [ref=e369] [cursor=pointer]:
+              - checkbox "Unity Hub 下载缓存 安全" [checked] [ref=e370]
+              - generic [ref=e371]: Unity Hub 下载缓存
+              - generic [ref=e372]: 安全
+            - generic "Cursor/Notion/Slack/Discord/Figma/Linear 等 Electron 应用缓存" [ref=e373] [cursor=pointer]:
+              - checkbox "Electron 应用缓存集 安全" [checked] [ref=e374]
+              - generic [ref=e375]: Electron 应用缓存集
+              - generic [ref=e376]: 安全
+            - generic "NuGet HTTP 缓存与 VS 临时项目缓存" [ref=e377] [cursor=pointer]:
+              - checkbox ".NET / VS 临时产物 安全" [checked] [ref=e378]
+              - generic [ref=e379]: .NET / VS 临时产物
+              - generic [ref=e380]: 安全
+            - generic "Docker Desktop 日志文件" [ref=e381] [cursor=pointer]:
+              - checkbox "Docker Desktop 日志 安全" [checked] [ref=e382]
+              - generic [ref=e383]: Docker Desktop 日志
+              - generic [ref=e384]: 安全
+            - generic "C:\\Windows\\Logs 下的组件存储与维护日志，常超过 1GB" [ref=e385] [cursor=pointer]:
+              - checkbox "Windows CBS/DISM 日志 谨慎" [ref=e386]
+              - generic [ref=e387]: Windows CBS/DISM 日志
+              - generic [ref=e388]: 谨慎
+            - generic "Windows Defender 扫描历史与隔离缓存（不影响实时保护）" [ref=e389] [cursor=pointer]:
+              - checkbox "Defender 扫描历史 低风险" [ref=e390]
+              - generic [ref=e391]: Defender 扫描历史
+              - generic [ref=e392]: 低风险
+            - generic "C:\\Windows\\Memory.dmp 和 minidump，蓝屏分析后通常可删除" [ref=e393] [cursor=pointer]:
+              - checkbox "系统内存转储 安全" [checked] [ref=e394]
+              - generic [ref=e395]: 系统内存转储
+              - generic [ref=e396]: 安全
+            - generic "用户与系统 TEMP 中超过 7 天未访问的文件" [ref=e397] [cursor=pointer]:
+              - checkbox "TEMP 老旧文件 (>7天) 安全" [checked] [ref=e398]
+              - generic [ref=e399]: TEMP 老旧文件 (>7天)
+              - generic [ref=e400]: 安全
+            - generic "D:\\Projects 下可重建的 Rust/Tauri target 构建产物" [ref=e401] [cursor=pointer]:
+              - checkbox "D盘 Rust/Tauri target 低风险" [ref=e402]
+              - generic [ref=e403]: D盘 Rust/Tauri target
+              - generic [ref=e404]: 低风险
+            - generic "D:\\tmp\\WXWork 下的企业微信文件缓存、CEF 缓存和临时数据" [ref=e405] [cursor=pointer]:
+              - checkbox "D盘 企业微信缓存 谨慎" [ref=e406]
+              - generic [ref=e407]: D盘 企业微信缓存
+              - generic [ref=e408]: 谨慎
+            - generic "~/.cache/huggingface 下的模型与数据集缓存，删除后需重新下载" [ref=e409] [cursor=pointer]:
+              - checkbox "HuggingFace 模型缓存 激进" [ref=e410]
+              - generic [ref=e411]: HuggingFace 模型缓存
+              - generic [ref=e412]: 激进
+            - generic "Ollama 本地模型 blobs/history，可释放数 GB（激进：会删除已下载模型）" [ref=e413] [cursor=pointer]:
+              - checkbox "Ollama 模型与历史 激进" [ref=e414]
+              - generic [ref=e415]: Ollama 模型与历史
+              - generic [ref=e416]: 激进
+            - generic "LM Studio 本地模型，激进清理" [ref=e417] [cursor=pointer]:
+              - checkbox "LM Studio 模型 激进" [ref=e418]
+              - generic [ref=e419]: LM Studio 模型
+              - generic [ref=e420]: 激进
+            - generic "Windows 升级保留的回滚副本，常 10GB+。删除后无法回滚" [ref=e421] [cursor=pointer]:
+              - checkbox "Windows.old (旧版系统) 激进" [ref=e422]
+              - generic [ref=e423]: Windows.old (旧版系统)
+              - generic [ref=e424]: 激进
+            - generic "用户目录下超过 180 天未访问的 node_modules（可由 npm install 重建）" [ref=e425] [cursor=pointer]:
+              - checkbox "陈旧 node_modules (>180天) 激进" [ref=e426]
+              - generic [ref=e427]: 陈旧 node_modules (>180天)
+              - generic [ref=e428]: 激进
+            - generic "D:\\Projects\\visualize_ta\\deploy 下的 .stage 暂存包和 releases 历史包" [ref=e429] [cursor=pointer]:
+              - checkbox "D盘 visualize_ta 部署产物 谨慎" [ref=e430]
+              - generic [ref=e431]: D盘 visualize_ta 部署产物
+              - generic [ref=e432]: 谨慎
+            - generic "D:\\Software\\SDK\\system-images 下的 Android Emulator 镜像，建议确认不用后再删" [ref=e433] [cursor=pointer]:
+              - checkbox "D盘 Android 模拟器镜像 高风险" [ref=e434]
+              - generic [ref=e435]: D盘 Android 模拟器镜像
+              - generic [ref=e436]: 高风险
+        - complementary [ref=e55]:
+          - generic [ref=e56]:
+            - generic [ref=e57]: C 盘剩余
+            - strong [ref=e58]: 3.67 GB
+          - generic [ref=e437]:
+            - generic [ref=e438]: D 盘剩余
+            - strong [ref=e439]: 59.97 GB
+          - generic [ref=e60]:
+            - generic [ref=e61]: 安全可清理
+            - strong [ref=e62]: 7.66 GB
+          - generic [ref=e441]:
+            - generic [ref=e442]: 页面文件可减
+            - strong [ref=e443]: 56 GB
+          - generic [ref=e63]:
+            - generic [ref=e64]: 当前勾选
+            - strong [ref=e65]: 69 类
+      - generic [ref=e66]:
+        - button "禁用休眠 释放 hiberfil.sys" [ref=e67] [cursor=pointer]:
+          - generic [ref=e68]: 禁用休眠
+          - strong [ref=e69]: 释放 hiberfil.sys
+        - button "页面文件 C 盘保留 4-8GB" [ref=e70] [cursor=pointer]:
+          - generic [ref=e71]: 页面文件
+          - strong [ref=e72]: C 盘保留 4-8GB
+        - button "更新缓存 清理 SoftwareDistribution" [ref=e73] [cursor=pointer]:
+          - generic [ref=e74]: 更新缓存
+          - strong [ref=e75]: 清理 SoftwareDistribution
+        - button "D盘项目清理 target / deploy / WXWork" [ref=e76] [cursor=pointer]:
+          - generic [ref=e77]: D盘项目清理
+          - strong [ref=e78]: target / deploy / WXWork
+        - button "组件清理 DISM 清理 WinSxS" [ref=e79] [cursor=pointer]:
+          - generic [ref=e80]: 组件清理
+          - strong [ref=e81]: DISM 清理 WinSxS
+        - button "迁移缓存 新缓存指向 D 盘" [ref=e82] [cursor=pointer]:
+          - generic [ref=e83]: 迁移缓存
+          - strong [ref=e84]: 新缓存指向 D 盘
+      - group [ref=e444]:
+        - generic "体检明细和占用建议" [ref=e445] [cursor=pointer]

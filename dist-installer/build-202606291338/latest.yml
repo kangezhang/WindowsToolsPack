@@ -1,0 +1,8 @@
+version: 1.0.0
+files:
+  - url: windows-toolspack-setup-1.0.0.exe
+    sha512: sgCaGOZRxjdxd+pze3bM4akIJd+fDzFASr5x+SZXUsS7wmvNxaZkxosdPKyhEWSTxYRiJ3mbZ6wpfTp7kM9d7A==
+    size: 220459058
+path: windows-toolspack-setup-1.0.0.exe
+sha512: sgCaGOZRxjdxd+pze3bM4akIJd+fDzFASr5x+SZXUsS7wmvNxaZkxosdPKyhEWSTxYRiJ3mbZ6wpfTp7kM9d7A==
+releaseDate: '2026-06-29T13:38:23.531Z'

@@ -1,0 +1,5 @@
+TOOLPACK_READY port=18765 token=d0d79d858b54cf96b81a988346a848f019b68c5db4ec844aa49f3636fab908c4
+INFO:     127.0.0.1:58058 - "GET /api/cleanup/diagnose HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58059 - "GET /api/cleanup/rules HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:58130 - "GET /api/cleanup/diagnose HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58131 - "GET /api/cleanup/rules HTTP/1.1" 200 OK

@@ -1,0 +1,4 @@
+owner: kangezhang
+repo: WindowsToolsPack
+provider: github
+updaterCacheDirName: windows-toolspack-updater

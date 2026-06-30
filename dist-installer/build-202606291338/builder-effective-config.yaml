@@ -1,0 +1,26 @@
+directories:
+  output: dist-installer\build-202606291338
+  buildResources: build
+appId: com.windowstoolspack.app
+productName: Windows工具箱
+files:
+  - filter:
+      - electron/**/*
+      - assets/**/*
+extraResources:
+  - from: backend/dist/backend.exe
+    to: backend.exe
+win:
+  target: nsis
+  icon: assets/icon.ico
+  signAndEditExecutable: false
+  requestedExecutionLevel: requireAdministrator
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: assets/icon.ico
+  uninstallerIcon: assets/icon.ico
+  installerHeaderIcon: assets/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+electronVersion: 33.4.11

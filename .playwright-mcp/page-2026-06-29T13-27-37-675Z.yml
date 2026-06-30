@@ -1,0 +1,55 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - navigation "Main Modules" [ref=e6]:
+        - button "创意美术中心" [ref=e7] [cursor=pointer]
+        - button "知识库" [ref=e8] [cursor=pointer]
+        - button "软件库" [ref=e9] [cursor=pointer]
+        - button "流程总览" [ref=e10] [cursor=pointer]
+      - heading "创意美术中心" [level=1] [ref=e11]
+      - generic [ref=e12]:
+        - button "切换到白色主题" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+        - generic "调整字体大小" [ref=e16]:
+          - img [ref=e17]:
+            - generic [ref=e18]: A
+          - slider [ref=e19] [cursor=pointer]: "1"
+          - img [ref=e20]:
+            - generic [ref=e21]: A
+        - button "登录 / 注册" [ref=e22] [cursor=pointer]:
+          - img [ref=e23]
+          - text: 登录 / 注册
+  - generic [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e28]: UME Creative Art Center
+      - heading "创意美术中心" [level=2] [ref=e29]
+      - paragraph [ref=e30]: 统一沉淀团队文档、规范、记录与项目资料
+      - generic "核心入口" [ref=e31]:
+        - button "知识库 浏览、检索和维护团队沉淀资料 →" [ref=e32] [cursor=pointer]:
+          - img [ref=e34]
+          - generic [ref=e36]:
+            - generic [ref=e37]: 知识库
+            - generic [ref=e38]: 浏览、检索和维护团队沉淀资料
+          - generic [ref=e39]: →
+        - button "流程总览 查看团队协作流程、文档模板与执行记录 →" [ref=e40] [cursor=pointer]:
+          - img [ref=e42]
+          - generic [ref=e44]:
+            - generic [ref=e45]: 流程总览
+            - generic [ref=e46]: 查看团队协作流程、文档模板与执行记录
+          - generic [ref=e47]: →
+    - region "知识库概览" [ref=e48]:
+      - generic [ref=e49]:
+        - generic [ref=e50]: "8"
+        - generic [ref=e51]: 文档条目
+      - generic [ref=e52]:
+        - generic [ref=e53]: "7"
+        - generic [ref=e54]: 流程模板
+      - generic [ref=e55]:
+        - generic [ref=e56]: "12"
+        - generic [ref=e57]: 归档资料
+      - button "维护入口 团队资料统一在知识库中查看和更新 →" [ref=e58] [cursor=pointer]:
+        - generic [ref=e59]: 维护入口
+        - generic [ref=e60]: 团队资料统一在知识库中查看和更新
+        - generic [ref=e61]: →
+  - contentinfo [ref=e62]:
+    - paragraph [ref=e64]: © 2026 UME GAME
